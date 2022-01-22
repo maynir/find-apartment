@@ -29,7 +29,7 @@ port = 465
 myclient = pymongo.MongoClient("mongodb://localhost:27017/")
 mydb = myclient["apartmentsdb"]
 mycol = mydb["apartments"]
-seen_apartments = {apartment['apartment_id']: apartment for apartment in mycol.find()}
+seen_apartments = {apartment['apartment_id']                   : apartment for apartment in mycol.find()}
 
 words = ["השותף", "השותפה", "שותף", "שותפה", "מתפנה חדר", "מפנה חדר", "מחליפה", "מחליף", "מחליפ/ה", "שותפ/ה", "מחפשת שותפה", "מחפש שותפה", "מחפש שותף",
          "מחפשת שותפה", "מפנה את החדר שלי", "חדר להשכרה", "דירת שותפים", "בדירת שותפים", "מפנה את חדרי", "שותף/ה", "עוזב את החדר שלי", "עוזבת את החדר שלי", "חדר בדירת"]
@@ -71,67 +71,58 @@ time.sleep(5)
 
 # while True:
 browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-time.sleep(1)
+time.sleep(5)
 browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-time.sleep(1)
+time.sleep(5)
 
-see_mores = browser.find_elements_by_xpath(
-    "//div[contains(text(), 'See more')]")
+new_apartments_count = 0
 
-for see_more in see_mores:
+posts = browser.find_elements_by_xpath("//*[@class='du4w35lb k4urcfbm l9j0dhe7 sjgh65i0']")
+for post in posts:
+  see_mores = post.find_elements_by_xpath(".//div[contains(text(), 'See more')]")
+  for see_more in see_mores:
     try:
         ActionChains(browser).move_to_element(see_more).perform()
         see_more.click()
-        print('clicked')
+        print('Load More clicked')
         time.sleep(1)
     except:
         print('not clicked')
         continue
+  id = post.find_element_by_tag_name("strong").text
+  
+  try:
+      if id in seen_apartments:
+          print("Apartment id: " + id + ", seen already.")
+          print("__________________________")
+          continue
 
-time.sleep(5)
+      text = post.find_element_by_xpath(".//div[@class='kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x c1et5uql ii04i59q']").text
+      posted_by = id
+      posted_by_url = post.find_elements_by_xpath(".//a")[0].get_attribute('href')
+      post_url = post.find_elements_by_xpath(".//a")[1].get_attribute('href')
 
-source_data = browser.page_source
-bs_data = bs(source_data, 'html.parser')
-posts = bs_data.find_all(
-    'div', {"class": "du4w35lb k4urcfbm l9j0dhe7 sjgh65i0"})
+      mycol.insert_one({"apartment_id": id, "posted_by": posted_by,
+                        "posted_by_url": posted_by_url, "post_url": post_url, "text": text})
 
-new_apartments_count = 0
+      if not regex.search(text):
+          print("Apartment not matching words")
+          print("post text: " + text)
+          print("__________________________")
+          continue
 
-for post in posts:
-    id = post.find("strong").get_text()
+      new_apartments_count += 1
+      mail_content += f'Apartment number {new_apartments_count}:\nPost text: \n{text}\nPost link: \n{post_url}\nPosted by: \n{posted_by}\nPosted by URL: \n{posted_by_url}\n\n\n'
 
-    try:
-        if id in seen_apartments:
-            print("Apartment id: " + id + ", seen already.")
-            continue
-
-        text = post.find("div", {
-                         "class": "kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x c1et5uql ii04i59q"}).get_text()
-        top_links = post.find(
-            "div", {"class": "j83agx80 cbu4d94t ew0dbk1b irj2b8pg"}).find_all("a")
-        posted_by = post.find("strong").get_text()
-        posted_by_url = top_links[0]["href"]
-        post_url = top_links[1]["href"]
-
-        mycol.insert_one({"apartment_id": id, "posted_by": posted_by,
-                         "posted_by_url": posted_by_url, "post_url": post_url, "text": text})
-
-        if not regex.search(text):
-            print("Apartment not matching words")
-            continue
-
-        new_apartments_count += 1
-        mail_content += f'Apartment number {new_apartments_count}:\nPost text: \n{text}\nPost link: \n{post_url}\nPosted by: \n{posted_by}\nPosted by URL: \n{posted_by_url}\n\n\n'
-
-        print("post text: " + text)
-        print("post link: " + post_url)
-        print("posted by: " + posted_by)
-        print("user url: " + posted_by_url)
-        print("__________________________")
-    except:
-        mycol.insert_one({"apartment_id": id})
-        print('couldnt parse apartment_id: ' + id)
-        print("__________________________")
+      print("post text: " + text)
+      print("post link: " + post_url)
+      print("posted by: " + posted_by)
+      print("user url: " + posted_by_url)
+      print("__________________________")
+  except Exception as err:
+      mycol.insert_one({"apartment_id": id})
+      print(f'couldnt parse apartment_id: {id}, msg: {err}')
+      print("__________________________")
 
 if(new_apartments_count > 0):
     # Setup the MIME
@@ -153,15 +144,5 @@ if(new_apartments_count > 0):
 new_apartments_count = 0
 mail_content = ""
 
+# time.sleep(60*10)
 browser.quit()
-# time.sleep(60*10) # wait 10 minutes
-
-
-# server = smtplib.SMTP("smtp.example.cn")
-# server.login(from_email, 'password')  # user & password
-# server.send_message(msg)
-# server.quit()
-
-
-# with smtplib.SMTP_SSL("loccalhost", 1025, context=context) as server:
-#     server.sendmail(EMAIL, EMAIL, mail_content)
