@@ -100,7 +100,7 @@ for post in posts:
       try:
           text = post.find_element_by_xpath(".//div[@class='ecm0bbzt hv4rvrfc ihqw7lf3 dati1w0a']").text
       except:
-      text = post.find_element_by_xpath(".//div[@class='kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x c1et5uql ii04i59q']").text
+          text = post.find_element_by_xpath(".//div[@class='kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x c1et5uql ii04i59q']").text
       posted_by = id
       posted_by_url = post.find_elements_by_xpath(".//a")[0].get_attribute('href')
       post_url = post.find_elements_by_xpath(".//a")[1].get_attribute('href')
