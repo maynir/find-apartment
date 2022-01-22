@@ -42,9 +42,11 @@ option.add_argument("start-maximized")
 option.add_argument("--disable-extensions")
 option.add_argument("--disable-notifications")
 
-EMAIL = ""
-EMAIL_FOR_SEND = ""
+EMAIL = "maynirrr@gmail.com"
+EMAIL_FOR_SEND = "findapartmenttlv@gmail.com"
 PASSWORD = ""
+
+group_ids = [35819517694]
 
 browser = webdriver.Chrome(ChromeDriverManager().install(), options=option)
 browser.get("http://facebook.com")
