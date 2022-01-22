@@ -58,15 +58,7 @@ pass_field.send_keys(Keys.RETURN)
 time.sleep(5)
 
 # once logged in, free to open up any target page
-browser.get('https://www.facebook.com/groups/35819517694')
-time.sleep(5)
-
-sort_field = wait.until(EC.visibility_of_element_located(
-    (By.CSS_SELECTOR, "[title='sort group feed by']")))
-sort_field.click()
-time.sleep(2)
-browser.find_element_by_xpath(
-    "//span[contains(text(), 'Recent posts')]").click()
+browser.get(f'https://www.facebook.com/groups/35819517694?sorting_setting=CHRONOLOGICAL')
 time.sleep(5)
 
 # while True:
