@@ -18,11 +18,18 @@ import re
 import datetime
 import re
 import pymongo
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.message import EmailMessage
+
+mail_content = ""
+port = 465
 
 myclient = pymongo.MongoClient("mongodb://localhost:27017/")
 mydb = myclient["apartmentsdb"]
 mycol = mydb["apartments"]
-seen_apartments = {apartment['apartment_id']                   : apartment for apartment in mycol.find()}
+seen_apartments = {apartment['apartment_id']: apartment for apartment in mycol.find()}
 
 words = ["השותף", "השותפה", "שותף", "שותפה", "מתפנה חדר", "מפנה חדר", "מחליפה", "מחליף", "מחליפ/ה", "שותפ/ה", "מחפשת שותפה", "מחפש שותפה", "מחפש שותף",
          "מחפשת שותפה", "מפנה את החדר שלי", "חדר להשכרה", "דירת שותפים", "בדירת שותפים", "מפנה את חדרי", "שותף/ה", "עוזב את החדר שלי", "עוזבת את החדר שלי", "חדר בדירת"]
@@ -36,6 +43,7 @@ option.add_argument("--disable-extensions")
 option.add_argument("--disable-notifications")
 
 EMAIL = ""
+EMAIL_FOR_SEND = ""
 PASSWORD = ""
 
 browser = webdriver.Chrome(ChromeDriverManager().install(), options=option)
@@ -87,6 +95,8 @@ bs_data = bs(source_data, 'html.parser')
 posts = bs_data.find_all(
     'div', {"class": "du4w35lb k4urcfbm l9j0dhe7 sjgh65i0"})
 
+new_apartments_count = 0
+
 for post in posts:
     id = post.find("strong").get_text()
 
@@ -97,9 +107,6 @@ for post in posts:
 
         text = post.find("div", {
                          "class": "kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x c1et5uql ii04i59q"}).get_text()
-        if not regex.search(text):
-            continue
-
         top_links = post.find(
             "div", {"class": "j83agx80 cbu4d94t ew0dbk1b irj2b8pg"}).find_all("a")
         posted_by = post.find("strong").get_text()
@@ -109,6 +116,13 @@ for post in posts:
         mycol.insert_one({"apartment_id": id, "posted_by": posted_by,
                          "posted_by_url": posted_by_url, "post_url": post_url, "text": text})
 
+        if not regex.search(text):
+            print("Apartment not matching words")
+            continue
+
+        new_apartments_count += 1
+        mail_content += f'Apartment number {new_apartments_count}:\nPost text: \n{text}\nPost link: \n{post_url}\nPosted by: \n{posted_by}\nPosted by URL: \n{posted_by_url}\n\n\n'
+
         print("post text: " + text)
         print("post link: " + post_url)
         print("posted by: " + posted_by)
@@ -116,8 +130,38 @@ for post in posts:
         print("__________________________")
     except:
         mycol.insert_one({"apartment_id": id})
-        print('couldnt parse')
+        print('couldnt parse apartment_id: ' + id)
         print("__________________________")
 
-    browser.quit()
-    # time.sleep(60*10) # wait 10 minutes
+if(new_apartments_count > 0):
+    # Setup the MIME
+    message = MIMEMultipart()
+    message['From'] = EMAIL_FOR_SEND
+    message['To'] = EMAIL
+    message['Subject'] = 'New apartment alert'  # The subject line
+    # The body and the attachments for the mail
+    message.attach(MIMEText(mail_content, 'plain'))
+    # Create SMTP session for sending the mail
+    session = smtplib.SMTP('smtp.gmail.com', 587)  # use gmail with port
+    session.starttls()  # enable security
+    session.login(EMAIL_FOR_SEND, PASSWORD)  # login with mail_id and password
+    text = message.as_string()
+    session.sendmail(EMAIL_FOR_SEND, EMAIL, text)
+    session.quit()
+    print(f'Mail Sent with {new_apartments_count} new apartments')
+
+new_apartments_count = 0
+mail_content = ""
+
+browser.quit()
+# time.sleep(60*10) # wait 10 minutes
+
+
+# server = smtplib.SMTP("smtp.example.cn")
+# server.login(from_email, 'password')  # user & password
+# server.send_message(msg)
+# server.quit()
+
+
+# with smtplib.SMTP_SSL("loccalhost", 1025, context=context) as server:
+#     server.sendmail(EMAIL, EMAIL, mail_content)
