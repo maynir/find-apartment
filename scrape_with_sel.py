@@ -129,7 +129,7 @@ if(new_apartments_count > 0):
     message = MIMEMultipart()
     message['From'] = EMAIL_FOR_SEND
     message['To'] = EMAIL
-    message['Subject'] = f'New {new_apartments_count} apartments alert'  # The subject line
+    message['Subject'] = f'New {new_apartments_count} apartments for you'  # The subject line
     # The body and the attachments for the mail
     message.attach(MIMEText(mail_content, 'plain'))
     # Create SMTP session for sending the mail
