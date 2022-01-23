@@ -73,7 +73,8 @@ while True:
       time.sleep(random_num(5,7))
 
       group_name = browser.find_element_by_xpath("//*[@class='oajrlxb2 g5ia77u1 qu0x051f esr5mh6w e9989ue4 r7d6kgcz rq0escxv nhd2j8a9 nc684nl6 p7hjln8o kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x jb3vyjys rz4wbd8a qt6c0cv9 a8nywdso i1ao9s8h esuyzwwr f1sip0of lzcic4wl gmql0nx0 gpro0wi8 hnhda86s']").text
-      
+      print(f"Looking at group: {group_name}")
+
       browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
       time.sleep(random_num(5,7))
       browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
@@ -151,6 +152,8 @@ while True:
       session.sendmail(EMAIL_FOR_SEND, EMAIL, text)
       session.quit()
       print(f'Mail Sent with {new_apartments_count} new apartments')
+  else:
+      print('No new apartments :(')
 
   new_apartments_count = 0
   mail_content = ""
