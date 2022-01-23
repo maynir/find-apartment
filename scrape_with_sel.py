@@ -22,6 +22,10 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.message import EmailMessage
+import random
+
+def random_num(start, end):
+  return random.randint(start, end)
 
 mail_content = ""
 port = 465
@@ -57,20 +61,20 @@ email_field.send_keys(EMAIL)
 pass_field = wait.until(EC.visibility_of_element_located((By.NAME, 'pass')))
 pass_field.send_keys(PASSWORD)
 pass_field.send_keys(Keys.RETURN)
-time.sleep(10)
+time.sleep(random_num(10,12))
 
 new_apartments_count = 0
 
 for group_id in group_ids:
     # once logged in, free to open up any target page
     browser.get(f'https://www.facebook.com/groups/{group_id}?sorting_setting=CHRONOLOGICAL')
-    time.sleep(5)
+    time.sleep(random_num(5,7))
 
     # while True:
     browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-    time.sleep(5)
+    time.sleep(random_num(5,7))
     browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-    time.sleep(5)
+    time.sleep(random_num(5,7))
 
     posts = browser.find_elements_by_xpath("//*[@class='du4w35lb k4urcfbm l9j0dhe7 sjgh65i0']")
     for post in posts:
@@ -80,7 +84,7 @@ for group_id in group_ids:
             ActionChains(browser).move_to_element(see_more).perform()
             see_more.click()
             print('Load More clicked')
-            time.sleep(1)
+            time.sleep(random_num(1,2))
         except:
             print('not clicked')
             continue
@@ -101,8 +105,8 @@ for group_id in group_ids:
           post_url = post.find_element_by_xpath(".//a[@class='oajrlxb2 g5ia77u1 qu0x051f esr5mh6w e9989ue4 r7d6kgcz rq0escxv nhd2j8a9 nc684nl6 p7hjln8o kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x jb3vyjys rz4wbd8a qt6c0cv9 a8nywdso i1ao9s8h esuyzwwr f1sip0of lzcic4wl gmql0nx0 gpro0wi8 b1v8xokw']").get_attribute('href')
           posted_ago = post.find_element_by_xpath(".//a[@class='oajrlxb2 g5ia77u1 qu0x051f esr5mh6w e9989ue4 r7d6kgcz rq0escxv nhd2j8a9 nc684nl6 p7hjln8o kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x jb3vyjys rz4wbd8a qt6c0cv9 a8nywdso i1ao9s8h esuyzwwr f1sip0of lzcic4wl gmql0nx0 gpro0wi8 b1v8xokw']").find_element_by_tag_name("span").text
           
-          mycol.insert_one({"apartment_id": id, "posted_by": posted_by,
-                            "posted_by_url": posted_by_url, "post_url": post_url, "text": text, "posted_ago": posted_ago})
+          # mycol.insert_one({"apartment_id": id, "posted_by": posted_by,
+          #                   "posted_by_url": posted_by_url, "post_url": post_url, "text": text, "posted_ago": posted_ago})
 
           if not regex.search(text):
               print("Apartment not matching words")
@@ -120,11 +124,11 @@ for group_id in group_ids:
           print("user url: " + posted_by_url)
           print("__________________________")
       except Exception as err:
-          mycol.insert_one({"apartment_id": id})
+          # mycol.insert_one({"apartment_id": id})
           print(f'couldnt parse apartment_id: {id}, msg: {err}')
           print("__________________________")
 
-    time.sleep(15)
+    time.sleep(random_num(13,15))
 
 if(new_apartments_count > 0):
     # Setup the MIME
