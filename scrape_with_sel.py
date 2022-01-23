@@ -67,10 +67,12 @@ new_apartments_count = 0
 
 while True:
   for group_id in group_ids:
-      # once logged in, free to open up any target page
-      browser.get(f'https://www.facebook.com/groups/{group_id}?sorting_setting=CHRONOLOGICAL')
+      group_url = f'https://www.facebook.com/groups/{group_id}?sorting_setting=CHRONOLOGICAL'
+      browser.get(group_url)
       time.sleep(random_num(5,7))
 
+      group_name = browser.find_element_by_xpath("//*[@class='oajrlxb2 g5ia77u1 qu0x051f esr5mh6w e9989ue4 r7d6kgcz rq0escxv nhd2j8a9 nc684nl6 p7hjln8o kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x jb3vyjys rz4wbd8a qt6c0cv9 a8nywdso i1ao9s8h esuyzwwr f1sip0of lzcic4wl gmql0nx0 gpro0wi8 hnhda86s']").text
+      
       browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
       time.sleep(random_num(5,7))
       browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
@@ -105,8 +107,8 @@ while True:
             post_url = post.find_element_by_xpath(".//a[@class='oajrlxb2 g5ia77u1 qu0x051f esr5mh6w e9989ue4 r7d6kgcz rq0escxv nhd2j8a9 nc684nl6 p7hjln8o kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x jb3vyjys rz4wbd8a qt6c0cv9 a8nywdso i1ao9s8h esuyzwwr f1sip0of lzcic4wl gmql0nx0 gpro0wi8 b1v8xokw']").get_attribute('href')
             posted_ago = post.find_element_by_xpath(".//a[@class='oajrlxb2 g5ia77u1 qu0x051f esr5mh6w e9989ue4 r7d6kgcz rq0escxv nhd2j8a9 nc684nl6 p7hjln8o kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x jb3vyjys rz4wbd8a qt6c0cv9 a8nywdso i1ao9s8h esuyzwwr f1sip0of lzcic4wl gmql0nx0 gpro0wi8 b1v8xokw']").find_element_by_tag_name("span").text
             
-            # mycol.insert_one({"apartment_id": id, "posted_by": posted_by,
-            #                   "posted_by_url": posted_by_url, "post_url": post_url, "text": text, "posted_ago": posted_ago})
+            mycol.insert_one({"apartment_id": id, "posted_by": posted_by,
+                              "posted_by_url": posted_by_url, "post_url": post_url, "text": text, "posted_ago": posted_ago, "group_name": group_name, "group_url": group_url })
 
             if not regex.search(text):
                 print("Apartment not matching words")
@@ -115,16 +117,17 @@ while True:
                 continue
 
             new_apartments_count += 1
-            mail_content += f'Apartment number {new_apartments_count}:\nPosted {posted_ago} ago\nPost text: \n{text}\nPost link: \n{post_url}\nPosted by: \n{posted_by}\nPosted by URL: \n{posted_by_url}\n\n\n'
+            mail_content += f'Apartment number {new_apartments_count}:\nPosted {posted_ago} ago\nPost text: \n{text}\nPost link: \n{post_url}\nPosted by: \n{posted_by}\nPosted by URL: \n{posted_by_url}\nGroup name: \n{group_name}\nGroup URL: \n{group_url}\n\n\n\n'
 
             print("post text: " + text)
             print(f"post {posted_ago} ago")
             print("post link: " + post_url)
             print("posted by: " + posted_by)
             print("user url: " + posted_by_url)
+            print(f"posted at: {group_name}")
             print("__________________________")
         except Exception as err:
-            # mycol.insert_one({"apartment_id": id})
+            mycol.insert_one({"apartment_id": id})
             print(f'couldnt parse apartment_id: {id}, msg: {err}')
             print("__________________________")
 
