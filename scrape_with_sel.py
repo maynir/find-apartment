@@ -50,7 +50,8 @@ EMAIL = "maynirrr@gmail.com"
 EMAIL_FOR_SEND = "findapartmenttlv@gmail.com"
 PASSWORD = ""
 
-group_ids = [35819517694, 101875683484689, 174312609376409, 2092819334342645, 1673941052823845]
+group_ids = [35819517694, 101875683484689, 174312609376409, 2092819334342645, 1673941052823845, 599822590152094]
+group_id_to_sorting = {35819517694: 'CHRONOLOGICAL', 101875683484689: 'CHRONOLOGICAL', 174312609376409: 'CHRONOLOGICAL', 2092819334342645: 'CHRONOLOGICAL', 1673941052823845: 'CHRONOLOGICAL', 599822590152094: 'RECENT_LISTING_ACTIVITY'}
 
 browser = webdriver.Chrome(ChromeDriverManager().install(), options=option)
 browser.get("http://facebook.com")
@@ -67,7 +68,7 @@ new_apartments_count = 0
 
 while True:
   for group_id in group_ids:
-      group_url = f'https://www.facebook.com/groups/{group_id}?sorting_setting=CHRONOLOGICAL'
+      group_url = f'https://www.facebook.com/groups/{group_id}?sorting_setting={group_id_to_sorting[group_id]}'
       browser.get(group_url)
       time.sleep(random_num(5,7))
 
