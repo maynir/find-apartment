@@ -30,11 +30,33 @@ client = Client()
 from_whatsapp_number='whatsapp:+14155238886'
 to_whatsapp_number='whatsapp:+972507759245'
 
+EMAIL = "maynirrr@gmail.com"
+EMAIL_FOR_SEND = "findapartmenttlv@gmail.com"
+PASSWORD = ""
+
 def random_num(start, end):
   return random.randint(start, end)
 
 def send_whatsapp(msg):
   client.messages.create(body=msg,from_=from_whatsapp_number, to=to_whatsapp_number)
+  print("Whatsapp sent")
+
+def send_email(count, msg):
+    # Setup the MIME
+    message = MIMEMultipart()
+    message['From'] = EMAIL_FOR_SEND
+    message['To'] = EMAIL
+    message['Subject'] = f'New {count} apartments for you'  # The subject line
+    # The body and the attachments for the mail
+    message.attach(MIMEText(msg, 'plain'))
+    # Create SMTP session for sending the mail
+    session = smtplib.SMTP('smtp.gmail.com', 587)  # use gmail with port
+    session.starttls()  # enable security
+    session.login(EMAIL_FOR_SEND, PASSWORD)  # login with mail_id and password
+    text = message.as_string()
+    session.sendmail(EMAIL_FOR_SEND, EMAIL, text)
+    session.quit()
+    print(f'Mail Sent with {count} new apartments')
 
 mail_content = ""
 port = 465
@@ -54,10 +76,6 @@ option.add_argument("start-maximized")
 option.add_argument("--disable-extensions")
 option.add_argument("--disable-notifications")
 
-EMAIL = "maynirrr@gmail.com"
-EMAIL_FOR_SEND = "findapartmenttlv@gmail.com"
-PASSWORD = ""
-
 group_ids = [35819517694, 101875683484689, 174312609376409, 2092819334342645, 1673941052823845, 599822590152094, 287564448778602, 'ApartmentsTelAviv', 785935868134249, 423017647874807, 458499457501175, 108784732614979, 'telavivroommates', 109472732403520]
 group_id_to_sorting = {35819517694: 'CHRONOLOGICAL', 101875683484689: 'CHRONOLOGICAL', 174312609376409: 'CHRONOLOGICAL', 2092819334342645: 'CHRONOLOGICAL', 1673941052823845: 'CHRONOLOGICAL', 599822590152094: 'RECENT_LISTING_ACTIVITY', 287564448778602: 'RECENT_LISTING_ACTIVITY', 'ApartmentsTelAviv': 'CHRONOLOGICAL', 785935868134249: 'RECENT_LISTING_ACTIVITY', 423017647874807: 'CHRONOLOGICAL', 458499457501175: 'RECENT_LISTING_ACTIVITY', 108784732614979: 'CHRONOLOGICAL', 'telavivroommates': 'RECENT_LISTING_ACTIVITY', 109472732403520: 'CHRONOLOGICAL'}
 
@@ -67,8 +85,10 @@ browser.maximize_window()
 wait = WebDriverWait(browser, 30)
 email_field = wait.until(EC.visibility_of_element_located((By.NAME, 'email')))
 email_field.send_keys(EMAIL)
+time.sleep(1)
 pass_field = wait.until(EC.visibility_of_element_located((By.NAME, 'pass')))
 pass_field.send_keys(PASSWORD)
+time.sleep(1)
 pass_field.send_keys(Keys.RETURN)
 time.sleep(random_num(10,12))
 
@@ -107,7 +127,7 @@ while True:
 
       for post in posts:
         ActionChains(browser).move_to_element(post).perform()
-        time.sleep(1)
+        time.sleep(random_num(1,10))
         id = post.find_element_by_tag_name("strong").text
 
         if (id == ''):
@@ -124,9 +144,10 @@ while True:
         for see_more in see_mores:
           try:
               ActionChains(browser).move_to_element(see_more).perform()
+              time.sleep(random_num(1,10))
               see_more.click()
               print('Load More clicked')
-              time.sleep(random_num(1,2))
+              time.sleep(random_num(1,10))
           except:
               print('not clicked')
               continue
@@ -172,26 +193,11 @@ while True:
             print("__________________________")
 
       if(new_apartments_count > 0):
-          # Setup the MIME
-          message = MIMEMultipart()
-          message['From'] = EMAIL_FOR_SEND
-          message['To'] = EMAIL
-          message['Subject'] = f'New {new_apartments_count} apartments for you'  # The subject line
-          # The body and the attachments for the mail
-          message.attach(MIMEText(mail_content, 'plain'))
-          # Create SMTP session for sending the mail
-          session = smtplib.SMTP('smtp.gmail.com', 587)  # use gmail with port
-          session.starttls()  # enable security
-          session.login(EMAIL_FOR_SEND, PASSWORD)  # login with mail_id and password
-          text = message.as_string()
-          session.sendmail(EMAIL_FOR_SEND, EMAIL, text)
-          session.quit()
-          print(f'Mail Sent with {new_apartments_count} new apartments')
           try:
               send_whatsapp(mail_content)
-              print("Whatsapp sent")
           except:
               print("Culdnt send whatsapp")
+              send_email(new_apartments_count, mail_content)
       else:
           print('No new apartments...')
 
@@ -205,6 +211,5 @@ while True:
   print("Sleeping for 10 minutes now...")
   time.sleep(60*3) # Wait 10 minutes before starting all over
   print("Start searching again!")
-
 
 browser.quit()
