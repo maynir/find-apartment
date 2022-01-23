@@ -23,9 +23,18 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.message import EmailMessage
 import random
+import os
+from twilio.rest import Client
+
+client = Client()
+from_whatsapp_number='whatsapp:+14155238886'
+to_whatsapp_number='whatsapp:+972507759245'
 
 def random_num(start, end):
   return random.randint(start, end)
+
+def send_whatsapp(msg):
+  client.messages.create(body=msg,from_=from_whatsapp_number, to=to_whatsapp_number)
 
 mail_content = ""
 port = 465
@@ -178,6 +187,11 @@ while True:
           session.sendmail(EMAIL_FOR_SEND, EMAIL, text)
           session.quit()
           print(f'Mail Sent with {new_apartments_count} new apartments')
+          try:
+              send_whatsapp(mail_content)
+              print("Whatsapp sent")
+          except:
+              print("Culdnt send whatsapp")
       else:
           print('No new apartments...')
 
