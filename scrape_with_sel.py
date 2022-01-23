@@ -81,6 +81,13 @@ while True:
 
       posts = browser.find_elements_by_xpath("//*[@class='du4w35lb k4urcfbm l9j0dhe7 sjgh65i0']")
       for post in posts:
+        id = post.find_element_by_tag_name("strong").text
+
+        if id in seen_apartments:
+            print("Apartment id: " + id + ", seen already.")
+            print("__________________________")
+            continue  
+
         see_mores = post.find_elements_by_xpath(".//div[contains(text(), 'See more')]")
         for see_more in see_mores:
           try:
@@ -91,14 +98,8 @@ while True:
           except:
               print('not clicked')
               continue
-        id = post.find_element_by_tag_name("strong").text
         
         try:
-            if id in seen_apartments:
-                print("Apartment id: " + id + ", seen already.")
-                print("__________________________")
-                continue
-
             try:
                 text = post.find_element_by_xpath(".//div[@class='ecm0bbzt hv4rvrfc ihqw7lf3 dati1w0a']").text
             except:
