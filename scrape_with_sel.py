@@ -33,7 +33,6 @@ port = 465
 myclient = pymongo.MongoClient("mongodb://localhost:27017/")
 mydb = myclient["apartmentsdb"]
 mycol = mydb["apartments"]
-seen_apartments = {apartment['apartment_id']                   : apartment for apartment in mycol.find()}
 
 words = ["השותף", "השותפה", "שותף", "שותפה", "מתפנה חדר", "מפנה חדר", "מחליפה", "מחליף", "מחליפ/ה", "שותפ/ה", "מחפשת שותפה", "מחפש שותפה", "מחפש שותף",
          "מחפשת שותפה", "מפנה את החדר שלי", "חדר להשכרה", "דירת שותפים", "בדירת שותפים", "מפנה את חדרי", "שותף/ה", "עוזב את החדר שלי", "עוזבת את החדר שלי", "חדר בדירת"]
@@ -67,6 +66,8 @@ time.sleep(random_num(10,12))
 new_apartments_count = 0
 
 while True:
+  seen_apartments = {apartment['apartment_id']: apartment for apartment in mycol.find()}
+
   for group_id in group_ids:
       group_url = f'https://www.facebook.com/groups/{group_id}?sorting_setting={group_id_to_sorting[group_id]}'
       browser.get(group_url)
@@ -124,6 +125,7 @@ while True:
                 print("__________________________")
                 continue
 
+            print("!!!MATCH!!!")
             new_apartments_count += 1
             mail_content += f'Apartment number {new_apartments_count}:\nPosted {posted_ago} ago\nPost text: \n{text}\nPost link: \n{post_url}\nPosted by: \n{posted_by}\nPosted by URL: \n{posted_by_url}\nGroup name: \n{group_name}\nGroup URL: \n{group_url}\n\n\n\n'
 
@@ -139,6 +141,7 @@ while True:
             print(f'couldnt parse apartment_id: {id}, msg: {err}')
             print("__________________________")
 
+      print("Done with group")
       time.sleep(random_num(13,15))
 
   if(new_apartments_count > 0):
