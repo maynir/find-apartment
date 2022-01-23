@@ -74,13 +74,16 @@ while True:
 
       group_name = browser.find_element_by_xpath("//*[@class='oajrlxb2 g5ia77u1 qu0x051f esr5mh6w e9989ue4 r7d6kgcz rq0escxv nhd2j8a9 nc684nl6 p7hjln8o kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x jb3vyjys rz4wbd8a qt6c0cv9 a8nywdso i1ao9s8h esuyzwwr f1sip0of lzcic4wl gmql0nx0 gpro0wi8 hnhda86s']").text
       print(f"Looking at group: {group_name}")
-
+      
       browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
       time.sleep(random_num(5,7))
       browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
       time.sleep(random_num(5,7))
 
       posts = browser.find_elements_by_xpath("//*[@class='du4w35lb k4urcfbm l9j0dhe7 sjgh65i0']")
+      print(f"Found {len(posts)} posts in group")
+      print("__________________________")
+
       for post in posts:
         id = post.find_element_by_tag_name("strong").text
 
@@ -110,10 +113,12 @@ while True:
             post_url = post.find_element_by_xpath(".//a[@class='oajrlxb2 g5ia77u1 qu0x051f esr5mh6w e9989ue4 r7d6kgcz rq0escxv nhd2j8a9 nc684nl6 p7hjln8o kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x jb3vyjys rz4wbd8a qt6c0cv9 a8nywdso i1ao9s8h esuyzwwr f1sip0of lzcic4wl gmql0nx0 gpro0wi8 b1v8xokw']").get_attribute('href')
             posted_ago = post.find_element_by_xpath(".//a[@class='oajrlxb2 g5ia77u1 qu0x051f esr5mh6w e9989ue4 r7d6kgcz rq0escxv nhd2j8a9 nc684nl6 p7hjln8o kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x jb3vyjys rz4wbd8a qt6c0cv9 a8nywdso i1ao9s8h esuyzwwr f1sip0of lzcic4wl gmql0nx0 gpro0wi8 b1v8xokw']").find_element_by_tag_name("span").text
             
+            match = regex.search(text)
+            
             mycol.insert_one({"apartment_id": id, "posted_by": posted_by,
-                              "posted_by_url": posted_by_url, "post_url": post_url, "text": text, "posted_ago": posted_ago, "group_name": group_name, "group_url": group_url })
+                              "posted_by_url": posted_by_url, "post_url": post_url, "text": text, "posted_ago": posted_ago, "group_name": group_name, "group_url": group_url, "match": match })
 
-            if not regex.search(text):
+            if not match:
                 print("Apartment not matching words")
                 print("post text: " + text)
                 print("__________________________")
