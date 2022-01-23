@@ -97,11 +97,12 @@ for group_id in group_ids:
           except:
               text = post.find_element_by_xpath(".//div[@class='kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x c1et5uql ii04i59q']").text
           posted_by = id
-          posted_by_url = post.find_elements_by_xpath(".//a")[0].get_attribute('href')
-          post_url = post.find_elements_by_xpath(".//a")[1].get_attribute('href')
-
+          posted_by_url = post.find_element_by_xpath(".//a[@class='oajrlxb2 g5ia77u1 qu0x051f esr5mh6w e9989ue4 r7d6kgcz rq0escxv nhd2j8a9 nc684nl6 p7hjln8o kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x jb3vyjys rz4wbd8a qt6c0cv9 a8nywdso i1ao9s8h esuyzwwr f1sip0of lzcic4wl gpro0wi8 oo9gr5id lrazzd5p']").get_attribute('href')
+          post_url = post.find_element_by_xpath(".//a[@class='oajrlxb2 g5ia77u1 qu0x051f esr5mh6w e9989ue4 r7d6kgcz rq0escxv nhd2j8a9 nc684nl6 p7hjln8o kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x jb3vyjys rz4wbd8a qt6c0cv9 a8nywdso i1ao9s8h esuyzwwr f1sip0of lzcic4wl gmql0nx0 gpro0wi8 b1v8xokw']").get_attribute('href')
+          posted_ago = post.find_element_by_xpath(".//a[@class='oajrlxb2 g5ia77u1 qu0x051f esr5mh6w e9989ue4 r7d6kgcz rq0escxv nhd2j8a9 nc684nl6 p7hjln8o kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x jb3vyjys rz4wbd8a qt6c0cv9 a8nywdso i1ao9s8h esuyzwwr f1sip0of lzcic4wl gmql0nx0 gpro0wi8 b1v8xokw']").find_element_by_tag_name("span").text
+          
           mycol.insert_one({"apartment_id": id, "posted_by": posted_by,
-                            "posted_by_url": posted_by_url, "post_url": post_url, "text": text})
+                            "posted_by_url": posted_by_url, "post_url": post_url, "text": text, "posted_ago": posted_ago})
 
           if not regex.search(text):
               print("Apartment not matching words")
@@ -110,9 +111,10 @@ for group_id in group_ids:
               continue
 
           new_apartments_count += 1
-          mail_content += f'Apartment number {new_apartments_count}:\nPost text: \n{text}\nPost link: \n{post_url}\nPosted by: \n{posted_by}\nPosted by URL: \n{posted_by_url}\n\n\n'
+          mail_content += f'Apartment number {new_apartments_count}:\nPosted {posted_ago} ago\nPost text: \n{text}\nPost link: \n{post_url}\nPosted by: \n{posted_by}\nPosted by URL: \n{posted_by_url}\n\n\n'
 
           print("post text: " + text)
+          print(f"post {posted_ago} ago")
           print("post link: " + post_url)
           print("posted by: " + posted_by)
           print("user url: " + posted_by_url)
