@@ -66,9 +66,9 @@ time.sleep(random_num(10,12))
 new_apartments_count = 0
 
 while True:
-  seen_apartments = {apartment['apartment_id']: apartment for apartment in mycol.find()}
-
   for group_id in group_ids:
+      seen_apartments = {apartment['apartment_id']: apartment for apartment in mycol.find()}
+
       group_url = f'https://www.facebook.com/groups/{group_id}?sorting_setting={group_id_to_sorting[group_id]}'
       browser.get(group_url)
       time.sleep(random_num(5,7))
@@ -189,7 +189,7 @@ while True:
       time.sleep(random_num(13,15))
 
   print("Sleeping for 10 minutes now...")
-  time.sleep(60*10) # Wait 10 minutes before starting all over
+  time.sleep(60*3) # Wait 10 minutes before starting all over
   print("Start searching again!")
 
 
