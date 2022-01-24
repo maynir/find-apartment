@@ -41,6 +41,10 @@ def send_whatsapp(msg):
   client.messages.create(body=msg,from_=from_whatsapp_number, to=to_whatsapp_number)
   print("Whatsapp sent")
 
+def send_telegram(msg):
+  telegram_send.send(messages=[msg])
+  print("Telegram sent")
+
 def send_email(count, msg):
     # Setup the MIME
     message = MIMEMultipart()
@@ -194,10 +198,11 @@ while True:
 
       if(new_apartments_count > 0):
           try:
-              send_whatsapp(mail_content)
-          except:
-              print("Culdnt send whatsapp")
+              send_telegram(mail_content)
               send_email(new_apartments_count, mail_content)
+              # send_whatsapp(mail_content)
+          except Exception as err:
+              print(f"Culdnt send whatsapp/telegram, err: {err}")
       else:
           print('No new apartments...')
 
