@@ -78,6 +78,16 @@ def log_in():
     pass_field.send_keys(Keys.RETURN)
     time.sleep(random_num(10,12))
 
+def wait_for_next_round():
+    wait_min = random_num(10,14)
+    print(f"Going to sleep now")
+    while(wait_min > 0):
+        print(f"{wait_min} min left...")
+        time.sleep(60)
+        wait_min -= 1
+
+    print("Start searching again!")
+
 mail_content = ""
 port = 465
 
@@ -217,9 +227,6 @@ while True:
       print("__________________________\n")
       time.sleep(random_num(15,20))
 
-  wait_min = random_num(10,14)
-  print(f"Sleeping for {wait_min} minutes now...")
-  time.sleep(60*wait_min)
-  print("Start searching again!")
+  wait_for_next_round()
 
 browser.quit()
