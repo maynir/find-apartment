@@ -33,7 +33,7 @@ to_whatsapp_number='whatsapp:+972507759245'
 
 EMAIL = "maynirrr@gmail.com"
 EMAIL_FOR_SEND = "findapartmenttlv@gmail.com"
-PASSWORD = ""
+PASSWORD = "M20y23Nir"
 
 def random_num(start, end):
   return random.randint(start, end)
@@ -71,7 +71,7 @@ mydb = myclient["apartmentsdb"]
 mycol = mydb["apartments"]
 
 words = ["השותף", "השותפה", "שותף", "שותפה", "מתפנה חדר", "מפנה חדר", "מחליפה", "מחליף", "מחליפ/ה", "שותפ/ה", "מחפשת שותפה", "מחפש שותפה", "מחפש שותף",
-         "מחפשת שותפה", "מפנה את החדר שלי", "חדר להשכרה", "דירת שותפים", "בדירת שותפים", "מפנה את חדרי", "שותף/ה", "עוזב את החדר שלי", "עוזבת את החדר שלי", "חדר בדירת", "שותפים", "שותפות", "מפנה את החדר"]
+         "מחפשת שותפה", "מפנה את החדר שלי", "חדר להשכרה", "דירת שותפים", "בדירת שותפים", "מפנה את חדרי", "שותף/ה", "עוזב את החדר שלי", "עוזבת את החדר שלי", "חדר בדירת", "שותפים", "שותפות", "מפנה את החדר", "שלושה חדרים", "3 חדרים"]
 regex = re.compile('|'.join(re.escape(x) for x in words))
 
 # set options as you wish
