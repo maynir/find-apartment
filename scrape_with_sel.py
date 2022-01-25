@@ -64,6 +64,20 @@ def send_email(posted_by, msg):
     session.quit()
     print(f'Mail Sent')
 
+def scroll_down():
+    browser.execute_script("window.scrollTo({left: 0, top: document.body.scrollHeight, behavior: 'smooth'});")
+    time.sleep(random_num(8,10))
+
+def log_in():
+    email_field = wait.until(EC.visibility_of_element_located((By.NAME, 'email')))
+    email_field.send_keys(EMAIL)
+    time.sleep(1)
+    pass_field = wait.until(EC.visibility_of_element_located((By.NAME, 'pass')))
+    pass_field.send_keys(PASSWORD)
+    time.sleep(1)
+    pass_field.send_keys(Keys.RETURN)
+    time.sleep(random_num(10,12))
+
 mail_content = ""
 port = 465
 
@@ -89,14 +103,7 @@ browser = webdriver.Chrome(ChromeDriverManager().install(), options=option)
 browser.get("http://facebook.com")
 browser.maximize_window()
 wait = WebDriverWait(browser, 30)
-email_field = wait.until(EC.visibility_of_element_located((By.NAME, 'email')))
-email_field.send_keys(EMAIL)
-time.sleep(1)
-pass_field = wait.until(EC.visibility_of_element_located((By.NAME, 'pass')))
-pass_field.send_keys(PASSWORD)
-time.sleep(1)
-pass_field.send_keys(Keys.RETURN)
-time.sleep(random_num(10,12))
+log_in()
 
 while True:
   random.shuffle(group_ids)
@@ -111,8 +118,7 @@ while True:
       group_name = browser.find_element_by_xpath("//*[@class='oajrlxb2 g5ia77u1 qu0x051f esr5mh6w e9989ue4 r7d6kgcz rq0escxv nhd2j8a9 nc684nl6 p7hjln8o kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x jb3vyjys rz4wbd8a qt6c0cv9 a8nywdso i1ao9s8h esuyzwwr f1sip0of lzcic4wl gmql0nx0 gpro0wi8 hnhda86s']").text
       print(f"Looking at group: {group_name}")
       
-      browser.execute_script("window.scrollTo({left: 0, top: document.body.scrollHeight, behavior: 'smooth'});")
-      time.sleep(random_num(8,10))
+      scroll_down()
 
       posts = browser.find_elements_by_xpath("//*[@class='du4w35lb k4urcfbm l9j0dhe7 sjgh65i0']")
       if(len(posts) == 0 or len(posts) == 1):
@@ -120,8 +126,7 @@ while True:
         print(f"Found {len(posts)} posts, refreshing page...")
         browser.refresh()
         time.sleep(random_num(5,7))
-        browser.execute_script("window.scrollTo({left: 0, top: document.body.scrollHeight, behavior: 'smooth'});")
-        time.sleep(random_num(8,10))
+        scroll_down()
         posts = browser.find_elements_by_xpath("//*[@class='du4w35lb k4urcfbm l9j0dhe7 sjgh65i0']")
       else:
         blocked_retries = 0
