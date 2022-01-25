@@ -87,7 +87,10 @@ mycol = mydb["apartments"]
 
 words = ["השותף", "השותפה", "שותף", "שותפה", "מתפנה חדר", "מפנה חדר", "מחליפה", "מחליף", "מחליפ/ה", "שותפ/ה", "מחפשת שותפה", "מחפש שותפה", "מחפש שותף",
          "מחפשת שותפה", "מפנה את החדר שלי", "חדר להשכרה", "דירת שותפים", "בדירת שותפים", "מפנה את חדרי", "שותף/ה", "עוזב את החדר שלי", "עוזבת את החדר שלי", "חדר בדירת", "שותפים", "שותפות", "מפנה את החדר", "שלושה חדרים", "3 חדרים"]
-regex = re.compile('|'.join(re.escape(x) for x in words))
+good_words_regex = re.compile('|'.join(re.escape(x) for x in words))
+
+bad_words = ["ללא סלון","בלי סלון","סורי בנות","סליחה בנות"]
+bad_words_regex = re.compile('|'.join(re.escape(x) for x in bad_words))
 
 # set options as you wish
 option = Options()
@@ -108,7 +111,7 @@ log_in()
 while True:
   random.shuffle(group_ids)
   blocked_retries = 0
-  for group_id in group_ids[0:8]:
+  for group_id in group_ids[0:10]:
       seen_apartments = {apartment['apartment_id']: apartment for apartment in mycol.find()}
 
       group_url = f'https://www.facebook.com/groups/{group_id}?sorting_setting={group_id_to_sorting[group_id]}'
@@ -174,14 +177,15 @@ while True:
             posted_by_url = post.find_element_by_xpath(".//a[@class='oajrlxb2 g5ia77u1 qu0x051f esr5mh6w e9989ue4 r7d6kgcz rq0escxv nhd2j8a9 nc684nl6 p7hjln8o kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x jb3vyjys rz4wbd8a qt6c0cv9 a8nywdso i1ao9s8h esuyzwwr f1sip0of lzcic4wl gpro0wi8 oo9gr5id lrazzd5p']").get_attribute('href')
             # post_url = post.find_element_by_xpath(".//a[@class='oajrlxb2 g5ia77u1 qu0x051f esr5mh6w e9989ue4 r7d6kgcz rq0escxv nhd2j8a9 nc684nl6 p7hjln8o kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x jb3vyjys rz4wbd8a qt6c0cv9 a8nywdso i1ao9s8h esuyzwwr f1sip0of lzcic4wl gmql0nx0 gpro0wi8 b1v8xokw']").get_attribute('href')
             # posted_ago = post.find_element_by_xpath(".//span[@class='tojvnm2t a6sixzi8 abs2jz4q a8s20v7p t1p8iaqh k5wvi7nf q3lfd5jv pk4s997a bipmatt0 cebpdrjk qowsmv63 owwhemhu dp1hu0rb dhp61c6y iyyx5f41']").text
-            
-            match = bool(regex.search(text))
-            
+                      
+            match = bool(good_words_regex.search(text))
+            bad_match = bool(bad_words_regex.search(text))
+
             mycol.insert_one({"apartment_id": id, "posted_by": posted_by,
                               "posted_by_url": posted_by_url, "text": text, "group_name": group_name, "group_url": group_url, "match": match })
 
-            if not match:
-                print("Apartment not matching words")
+            if (bad_match or not match):
+                print(f"Apartment not matching words, bad_match: {bad_match}, match: {match}")
                 print(f"post id: {id}")
                 print("post text: " + text)
                 print("__________________________")
@@ -213,7 +217,7 @@ while True:
       print("__________________________\n")
       time.sleep(random_num(15,20))
 
-  wait_min = random_num(10,12)
+  wait_min = random_num(10,14)
   print(f"Sleeping for {wait_min} minutes now...")
   time.sleep(60*wait_min)
   print("Start searching again!")
