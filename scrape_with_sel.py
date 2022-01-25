@@ -126,7 +126,7 @@ while True:
         blocked_retries = 0
 
       if(blocked_retries >= 3):
-        print("You probabliy got blocked... stoping.")
+        print("You probably got blocked... stoping.")
         browser.quit()
 
 
