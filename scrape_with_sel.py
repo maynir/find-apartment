@@ -26,14 +26,15 @@ import random
 import os
 from twilio.rest import Client
 import telegram_send
+import config
 
 client = Client()
 from_whatsapp_number='whatsapp:+14155238886'
-to_whatsapp_number='whatsapp:+972507759245'
+to_whatsapp_number= config.my_whatsapp_number
 
-EMAIL = "maynirrr@gmail.com"
-EMAIL_FOR_SEND = "findapartmenttlv@gmail.com"
-PASSWORD = ""
+EMAIL = config.my_email
+EMAIL_FOR_SEND = config.email_for_send
+PASSWORD = config.password
 
 def random_num(start, end):
   return random.randint(start, end)
@@ -207,8 +208,9 @@ while True:
       print("__________________________\n")
       time.sleep(random_num(15,20))
 
-  print("Sleeping for 10 minutes now...")
-  time.sleep(60*10) # Wait 10 minutes before starting all over
+  wait_min = random_num(10,12)
+  print(f"Sleeping for {wait_min} minutes now...")
+  time.sleep(60*wait_min)
   print("Start searching again!")
 
 browser.quit()

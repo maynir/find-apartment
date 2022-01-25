@@ -1,2 +1,4 @@
 .vscode
 PyWhatKit_DB.txt
+config.py
+__pycache__
