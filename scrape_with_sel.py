@@ -33,7 +33,7 @@ to_whatsapp_number='whatsapp:+972507759245'
 
 EMAIL = "maynirrr@gmail.com"
 EMAIL_FOR_SEND = "findapartmenttlv@gmail.com"
-PASSWORD = "M20y23Nir"
+PASSWORD = ""
 
 def random_num(start, end):
   return random.randint(start, end)
