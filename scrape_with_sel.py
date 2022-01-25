@@ -27,6 +27,7 @@ import os
 from twilio.rest import Client
 import telegram_send
 import config
+import sys
 
 client = Client()
 from_whatsapp_number='whatsapp:+14155238886'
@@ -121,7 +122,7 @@ log_in()
 while True:
   random.shuffle(group_ids)
   blocked_retries = 0
-  for group_id in group_ids[0:10]:
+  for group_id in group_ids[0:8]:
       seen_apartments = {apartment['apartment_id']: apartment for apartment in mycol.find()}
 
       group_url = f'https://www.facebook.com/groups/{group_id}?sorting_setting={group_id_to_sorting[group_id]}'
@@ -146,8 +147,9 @@ while True:
 
       if(blocked_retries >= 3):
         print("You probably got blocked... stoping.")
+        send_telegram("You probably got blocked... stoping.")
         browser.quit()
-
+        sys.exit()
 
       time.sleep(random_num(8,10))
       print(f"Found {len(posts)} posts in group")
