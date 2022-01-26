@@ -80,7 +80,7 @@ def log_in():
     time.sleep(random_num(10,12))
 
 def wait_for_next_round():
-    wait_min = random_num(10,14)
+    wait_min = random_num(10,20) # minutes
     print(f"Going to sleep now")
     while(wait_min > 0):
         print(f"{wait_min} min left...")
@@ -100,7 +100,7 @@ words = ["השותף", "השותפה", "שותף", "שותפה", "מתפנה ח�
          "מחפשת שותפה", "מפנה את החדר שלי", "חדר להשכרה", "דירת שותפים", "בדירת שותפים", "מפנה את חדרי", "שותף/ה", "עוזב את החדר שלי", "עוזבת את החדר שלי", "חדר בדירת", "שותפים", "שותפות", "מפנה את החדר", "שלושה חדרים", "3 חדרים"]
 good_words_regex = re.compile('|'.join(re.escape(x) for x in words))
 
-bad_words = ["ללא סלון","בלי סלון","סורי בנות","סליחה בנות", "ביפו", "פלורנטין", "אין סלון"]
+bad_words = ["ללא סלון","בלי סלון","סורי בנות","סליחה בנות", "ביפו", "פלורנטין", "אין סלון", "יד אליהו", "רמת גן"]
 bad_words_regex = re.compile('|'.join(re.escape(x) for x in bad_words))
 
 # set options as you wish
@@ -208,7 +208,7 @@ while True:
 
             try:
                 send_telegram(mail_content)
-                send_email(posted_by, mail_content)
+                # send_email(posted_by, mail_content)
                 # send_whatsapp(mail_content)
             except Exception as err:
                 print(f"Culdnt send whatsapp/telegram, err: {err}")
@@ -227,7 +227,7 @@ while True:
 
       print("Done with group")
       print("__________________________\n")
-      time.sleep(random_num(15,20))
+      time.sleep(random_num(30,90))
 
   wait_for_next_round()
 
