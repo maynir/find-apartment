@@ -239,5 +239,6 @@ while True:
     browser.quit()
     wait_with_countdown(cool_down_minutes)
     cool_down_minutes += 20
+    blocked_retries = 0
 
 browser.quit()
