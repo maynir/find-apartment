@@ -1,0 +1,5 @@
+my_email = "your_facebook_email@gmail.com"
+email_for_send = "ignore this, i'm sending telegram and not email" 
+password = "your_facebook_password"
+my_whatsapp_number = 'ignore this, i'm sending telegram and not email'
+mongo_connection = "mongodb://localhost:27017/"
