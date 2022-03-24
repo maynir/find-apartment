@@ -30,8 +30,6 @@ import config
 import sys
 
 client = Client()
-from_whatsapp_number='whatsapp:+14155238886'
-to_whatsapp_number= config.my_whatsapp_number
 
 EMAIL = config.my_email
 EMAIL_FOR_SEND = config.email_for_send
@@ -39,10 +37,6 @@ PASSWORD = config.password
 
 def random_num(start, end):
   return random.randint(start, end)
-
-def send_whatsapp(msg):
-  client.messages.create(body=msg,from_=from_whatsapp_number, to=to_whatsapp_number)
-  print("Whatsapp sent")
 
 def send_telegram(msg):
   telegram_send.send(messages=[msg])
@@ -70,8 +64,14 @@ def scroll_down():
     time.sleep(random_num(8,10))
 
 def log_in():
-    email_field = wait.until(EC.visibility_of_element_located((By.NAME, 'email')))
-    email_field.send_keys(EMAIL)
+    time.sleep(5)
+    email_parts = EMAIL.split('@')
+    email_field = browser.find_element_by_name('email')
+    print(f"{email_field=}")
+    email_field.send_keys(email_parts[0])
+    action = ActionChains(browser)
+    action.key_down(Keys.SHIFT).send_keys('2').key_up(Keys.SHIFT).perform()
+    email_field.send_keys(email_parts[1])
     time.sleep(1)
     pass_field = wait.until(EC.visibility_of_element_located((By.NAME, 'pass')))
     pass_field.send_keys(PASSWORD)
@@ -91,7 +91,6 @@ class GettingBlockedError(Exception):
     pass
 
 mail_content = ""
-port = 465
 cool_down_minutes = 30
 
 myclient = pymongo.MongoClient("mongodb://localhost:27017/")
@@ -102,7 +101,8 @@ words = ["השותף", "השותפה", "שותף", "שותפה", "מתפנה ח�
          "מחפשת שותפה", "מפנה את החדר שלי", "חדר להשכרה", "דירת שותפים", "בדירת שותפים", "מפנה את חדרי", "שותף/ה", "עוזב את החדר שלי", "עוזבת את החדר שלי", "חדר בדירת", "שותפים", "שותפות", "מפנה את החדר", "שלושה חדרים", "3 חדרים"]
 good_words_regex = re.compile('|'.join(re.escape(x) for x in words))
 
-bad_words = ["ללא סלון","בלי סלון","סורי בנות","סליחה בנות", "ביפו", "פלורנטין", "אין סלון", "יד אליהו", "רמת גן", "נווה אליעזר", "בת ים"]
+bad_words = ["סורי בנות","סליחה בנות", "ביפו", "פלורנטין", "יד אליהו", "רמת גן", "נווה אליעזר", "בת ים", "לא לשותפים", "לא מתאימה לשותפים", "רמת אביב"]
+no_living_room_word = ["בלי סלון","אין סלון", "ללא סלון"]
 bad_words_regex = re.compile('|'.join(re.escape(x) for x in bad_words))
 
 # set options as you wish
@@ -112,11 +112,24 @@ option.add_argument("start-maximized")
 option.add_argument("--disable-extensions")
 option.add_argument("--disable-notifications")
 
-group_ids = [35819517694, 101875683484689, 174312609376409, 2092819334342645, 1673941052823845, 599822590152094, 287564448778602, 'ApartmentsTelAviv', 785935868134249, 423017647874807, 458499457501175, 108784732614979, 'telavivroommates', 109472732403520]
+group_ids = [35819517694, # דירות מפה לאוזן בת"א
+             101875683484689, # דירות מפה לאוזן בתל אביב
+             174312609376409, # דירות להשכרה במרכז תל אביב
+             2092819334342645, # דירות מפה ואוזן במרכז תל אביב
+             1673941052823845, # דירות להשכרה בתל אביב
+             599822590152094, # דירות שוות להשכרה בתל אביב
+             287564448778602, # דירות להשכרה לב תל אביב צפון ישן
+             'ApartmentsTelAviv', # דירות להשכרה ריקות או שותפים בתל אביב
+             785935868134249, # דירות להשכרה בתל אביב
+             423017647874807, # דירות להשכרה בתל אביב ללא תיווך - הקבוצה המובילה בפייסבוק
+             458499457501175, # דירות להשכרה לזוגות, שותפים ומשפחות בתל אביב
+             108784732614979, # דירות מפייס לאוזן בתל אביב
+             'telavivroommates', # דירות שותפים בתל אביב
+            ]#  109472732403520]
 group_id_to_sorting = {35819517694: 'CHRONOLOGICAL', 101875683484689: 'CHRONOLOGICAL', 174312609376409: 'CHRONOLOGICAL', 2092819334342645: 'CHRONOLOGICAL', 1673941052823845: 'CHRONOLOGICAL', 599822590152094: 'RECENT_LISTING_ACTIVITY', 287564448778602: 'RECENT_LISTING_ACTIVITY', 'ApartmentsTelAviv': 'CHRONOLOGICAL', 785935868134249: 'RECENT_LISTING_ACTIVITY', 423017647874807: 'CHRONOLOGICAL', 458499457501175: 'RECENT_LISTING_ACTIVITY', 108784732614979: 'CHRONOLOGICAL', 'telavivroommates': 'RECENT_LISTING_ACTIVITY', 109472732403520: 'CHRONOLOGICAL'}
 while True:
   try:
-    browser = webdriver.Chrome(ChromeDriverManager().install(), options=option)
+    browser = webdriver.Chrome(ChromeDriverManager(version='97.0.4692.71').install(), options=option)
     browser.get("http://facebook.com")
     browser.maximize_window()
     wait = WebDriverWait(browser, 30)
@@ -125,7 +138,7 @@ while True:
     while True:
       random.shuffle(group_ids)
       blocked_retries = 0
-      for group_id in group_ids[0:8]:
+      for group_id in group_ids[0:7]:
           seen_apartments = {apartment['apartment_id']: apartment for apartment in mycol.find()}
 
           group_url = f'https://www.facebook.com/groups/{group_id}?sorting_setting={group_id_to_sorting[group_id]}'
@@ -190,15 +203,17 @@ while True:
                 posted_by_url = post.find_element_by_xpath(".//a[@class='oajrlxb2 g5ia77u1 qu0x051f esr5mh6w e9989ue4 r7d6kgcz rq0escxv nhd2j8a9 nc684nl6 p7hjln8o kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x jb3vyjys rz4wbd8a qt6c0cv9 a8nywdso i1ao9s8h esuyzwwr f1sip0of lzcic4wl gpro0wi8 oo9gr5id lrazzd5p']").get_attribute('href')
                 # post_url = post.find_element_by_xpath(".//a[@class='oajrlxb2 g5ia77u1 qu0x051f esr5mh6w e9989ue4 r7d6kgcz rq0escxv nhd2j8a9 nc684nl6 p7hjln8o kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x jb3vyjys rz4wbd8a qt6c0cv9 a8nywdso i1ao9s8h esuyzwwr f1sip0of lzcic4wl gmql0nx0 gpro0wi8 b1v8xokw']").get_attribute('href')
                 # posted_ago = post.find_element_by_xpath(".//span[@class='tojvnm2t a6sixzi8 abs2jz4q a8s20v7p t1p8iaqh k5wvi7nf q3lfd5jv pk4s997a bipmatt0 cebpdrjk qowsmv63 owwhemhu dp1hu0rb dhp61c6y iyyx5f41']").text
-                          
-                match = bool(good_words_regex.search(text))
-                bad_match = bool(bad_words_regex.search(text))
+
+                match_word = good_words_regex.search(text)
+                bad_match_word = bad_words_regex.search(text)
+                match = bool(match_word)
+                bad_match = bool(bad_match_word)
 
                 mycol.insert_one({"apartment_id": id, "posted_by": posted_by,
                                   "posted_by_url": posted_by_url, "text": text, "group_name": group_name, "group_url": group_url, "match": match })
 
                 if (bad_match or not match):
-                    print(f"Apartment not matching words, bad_match: {bad_match}, match: {match}")
+                    print(f"Apartment not matching words, bad_match: {bad_match} because {bad_match_word=}, match: {match} because {match_word=}")
                     print(f"post id: {id}")
                     print("post text: " + text)
                     print("__________________________")
@@ -210,9 +225,8 @@ while True:
                 try:
                     send_telegram(mail_content)
                     # send_email(posted_by, mail_content)
-                    # send_whatsapp(mail_content)
                 except Exception as err:
-                    print(f"Culdnt send whatsapp/telegram, err: {err}")
+                    print(f"Culdnt send telegram, err: {err}")
 
                 print("post text: " + text)
                 print("posted by: " + posted_by)
@@ -228,17 +242,22 @@ while True:
 
           print("Done with group")
           print("__________________________\n")
-          time.sleep(random_num(30,90))
+          wait_with_countdown(random_num(1,2))
 
-      wait_with_countdown(random_num(10,20))
+      wait_with_countdown(random_num(18,22))
       print("Start searching again!")
   except GettingBlockedError as err:
     msg = f"You probably got blocked... cooling down for {cool_down_minutes} minutes."
     print(msg)
     send_telegram(msg)
     browser.quit()
+    sys.exit()
     wait_with_countdown(cool_down_minutes)
     cool_down_minutes += 20
     blocked_retries = 0
+  except Exception as err:
+    print(f"{err=}")
+    browser.quit()
+    time.sleep(10)
 
 browser.quit()
