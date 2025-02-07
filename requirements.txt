@@ -1,7 +1,0 @@
-selenium
-webdriver-manager
-beautifulsoup4
-pandas
-telegram_send
-pymongo
-twilio

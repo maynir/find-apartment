@@ -1,0 +1,18 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+selenium = "*"
+webdriver-manager = "*"
+beautifulsoup4 = "*"
+pandas = "*"
+telegram-send = "*"
+pymongo = "*"
+twilio = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.9"
