@@ -35,6 +35,9 @@ EMAIL = config.my_email
 EMAIL_FOR_SEND = config.email_for_send
 PASSWORD = config.password
 
+def human_delay(min_time=2, max_time=5):
+    time.sleep(random.uniform(min_time, max_time))
+
 def random_num(start, end):
   return random.randint(start, end)
 
@@ -59,25 +62,61 @@ def send_email(posted_by, msg):
     session.quit()
     print(f'Mail Sent')
 
+from selenium.webdriver.common.action_chains import ActionChains
+import random
+import time
+
+def move_mouse_randomly():
+    """ Simulates mouse movement by moving to random coordinates on the page """
+    try:
+        for _ in range(random.randint(5, 10)):
+            # browser.execute_script(script)
+            time.sleep(random.uniform(0.5, 1.5))  # Pause briefly
+    except Exception as e:
+        print(f"⚠ Mouse movement failed: {e}")
+
 def scroll_down():
     browser.execute_script("window.scrollTo({left: 0, top: document.body.scrollHeight, behavior: 'smooth'});")
     time.sleep(random_num(8,10))
 
-def log_in():
-    time.sleep(5)
-    email_parts = EMAIL.split('@')
-    email_field = browser.find_element_by_name('email')
-    print(f"{email_field=}")
-    email_field.send_keys(email_parts[0])
-    action = ActionChains(browser)
-    action.key_down(Keys.SHIFT).send_keys('2').key_up(Keys.SHIFT).perform()
-    email_field.send_keys(email_parts[1])
-    time.sleep(1)
-    pass_field = wait.until(EC.visibility_of_element_located((By.NAME, 'pass')))
-    pass_field.send_keys(PASSWORD)
-    time.sleep(1)
-    pass_field.send_keys(Keys.RETURN)
-    time.sleep(random_num(10,12))
+def log_in(email, password):
+    """ Logs into Facebook while avoiding detection """
+    try:
+        wait = WebDriverWait(browser, 15)
+
+        # Find email field and enter email
+        email_field = wait.until(EC.presence_of_element_located((By.NAME, 'email')))
+        move_mouse_randomly()
+        email_field.click()
+        human_delay(1, 3)
+        email_field.send_keys(email)
+        move_mouse_randomly()
+
+        # Find password field and enter password
+        pass_field = wait.until(EC.presence_of_element_located((By.NAME, 'pass')))
+        move_mouse_randomly()
+        pass_field.click()
+        human_delay(1, 3)
+        pass_field.send_keys(password)
+        move_mouse_randomly()
+        human_delay(2, 4)
+
+        # Submit login form
+        pass_field.send_keys(Keys.RETURN)
+        move_mouse_randomly()
+
+        # Wait for home button (to confirm successful login)
+        wait.until(EC.presence_of_element_located((By.XPATH, "//*[@aria-label='Home']")))
+        print("✅ Login successful!")
+
+        # Save session cookies
+
+    except Exception as e:
+        print(f"❌ Login failed: {e}")
+        browser.quit()
+        exit(1)
+
+
 
 def wait_with_countdown(wait_min):
     print(f"Going to sleep now")
@@ -111,6 +150,8 @@ option.add_argument("--disable-infobars")
 option.add_argument("start-maximized")
 option.add_argument("--disable-extensions")
 option.add_argument("--disable-notifications")
+option.add_argument("--disable-blink-features=AutomationControlled")  # Prevent detection
+option.add_argument(f"user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.0.0 Safari/537.36")
 
 group_ids = [35819517694, # דירות מפה לאוזן בת"א
              101875683484689, # דירות מפה לאוזן בתל אביב
@@ -129,11 +170,11 @@ group_ids = [35819517694, # דירות מפה לאוזן בת"א
 group_id_to_sorting = {35819517694: 'CHRONOLOGICAL', 101875683484689: 'CHRONOLOGICAL', 174312609376409: 'CHRONOLOGICAL', 2092819334342645: 'CHRONOLOGICAL', 1673941052823845: 'CHRONOLOGICAL', 599822590152094: 'RECENT_LISTING_ACTIVITY', 287564448778602: 'RECENT_LISTING_ACTIVITY', 'ApartmentsTelAviv': 'CHRONOLOGICAL', 785935868134249: 'RECENT_LISTING_ACTIVITY', 423017647874807: 'CHRONOLOGICAL', 458499457501175: 'RECENT_LISTING_ACTIVITY', 108784732614979: 'CHRONOLOGICAL', 'telavivroommates': 'RECENT_LISTING_ACTIVITY', 109472732403520: 'CHRONOLOGICAL'}
 while True:
   try:
-    browser = webdriver.Chrome(ChromeDriverManager(version='97.0.4692.71').install(), options=option)
+    browser = webdriver.Chrome(service=webdriver.ChromeService(ChromeDriverManager().install()), options=option)
     browser.get("http://facebook.com")
     browser.maximize_window()
     wait = WebDriverWait(browser, 30)
-    log_in()
+    log_in(EMAIL,PASSWORD)
 
     while True:
       random.shuffle(group_ids)
@@ -146,7 +187,7 @@ while True:
           time.sleep(random_num(5,7))
 
           group_name = browser.find_element_by_xpath("//*[@class='oajrlxb2 g5ia77u1 qu0x051f esr5mh6w e9989ue4 r7d6kgcz rq0escxv nhd2j8a9 nc684nl6 p7hjln8o kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x jb3vyjys rz4wbd8a qt6c0cv9 a8nywdso i1ao9s8h esuyzwwr f1sip0of lzcic4wl gmql0nx0 gpro0wi8 hnhda86s']").text
-          print(f"Looking at group: {group_name}")
+          print(f"🔍 Looking at group: {group_name}")
           
           scroll_down()
 
