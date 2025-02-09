@@ -11,6 +11,7 @@ pandas = "*"
 telegram-send = "*"
 pymongo = "*"
 twilio = "*"
+python-telegram-bot = "*"
 
 [dev-packages]
 black = "*"
