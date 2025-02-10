@@ -1,6 +1,6 @@
 import asyncio
 from telegram import Bot
-import config
+from src.etc import config
 
 TELEGRAM_BOT_TOKEN = config.TELEGRAM_BOT_TOKEN
 
