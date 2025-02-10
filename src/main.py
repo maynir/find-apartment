@@ -173,10 +173,13 @@ def main():
                         raise GettingBlockedError
 
                     time.sleep(random.randint(8, 10))
-                    print(f"✅ Found {len(posts)} posts in group")
+                    print(f"🖼️ Found {len(posts)} posts in group")
                     print("__________________________")
 
-                    for post in posts:
+                    for index, post in enumerate(posts):
+                        post = posts = browser.find_elements(
+                            By.XPATH, f"//*[@class='{posts_class}']"
+                        )[index]
                         post_id = None
                         posted_by_url = None
                         text = None
@@ -279,7 +282,7 @@ def main():
                             print(f"⚠️ Error processing post: {err}")
                             continue
 
-                    print("✅ Finished processing group")
+                    print("☑️ Finished processing group")
                     wait_with_countdown(random.randint(1, 2))
 
                 wait_with_countdown(random.randint(18, 22))
