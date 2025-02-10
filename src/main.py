@@ -237,6 +237,14 @@ def main():
                                 print("__________________________")
                                 continue
 
+                            try:
+                                imgs = post.find_elements(By.XPATH, ".//*[@class='x6ikm8r x10wlt62 x10l6tqk']//img")
+                                imgs_src = [img.get_attribute("src") for img in imgs]
+                                print(f"📷 Found {len(imgs_src)} post images ")
+                            except Exception as err:
+                                print(f"⚠️Could not find post images")
+                                imgs_src = []
+
                             if text in seen_apartments:
                                 print(
                                     f"🥱Apartment posted by '{post_id}' already seen."
@@ -272,7 +280,7 @@ def main():
                             message = f"Post text:\n{text}\nPosted by:\n{post_id}\nPosted by URL:\n{posted_by_url}\nGroup name:\n{group_name}\nGroup URL:\n{group_url}\n\n"
 
                             try:
-                                notifier.notify(message)
+                                notifier.notify(message, imgs_src)
                             except Exception as err:
                                 print(
                                     f"⚠️ Could not send Telegram message: {err}, {message}"
