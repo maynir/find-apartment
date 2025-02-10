@@ -76,6 +76,8 @@ single_apartment_bad_words = [
     "נווה אליעזר",
     "בת ים",
     "השותפים",
+    "בשכונת התקווה",
+    "שכונת התקווה"
 ]
 sharable_apartment_bad_words = [
     "סורי בנות",
