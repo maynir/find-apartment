@@ -110,6 +110,7 @@ option.add_argument(
 
 def main():
     notifier = Notifier()
+    notifier.notify("🚀 Starting Facebook bot")
 
     while True:
         try:
@@ -128,7 +129,7 @@ def main():
 
                 for group_id in config.group_ids[:7]:
                     seen_apartments = {
-                        apartment["apartment_id"]: apartment
+                        apartment["text"]: apartment
                         for apartment in mycol.find()
                     }
                     group_url = f"https://www.facebook.com/groups/{group_id}?sorting_setting={config.group_id_to_sorting[group_id]}"
@@ -198,12 +199,6 @@ def main():
                             except Exception as err:
                                 print(f"⚠️Could not find post author")
 
-                            if post_id in seen_apartments:
-                                print(
-                                    f"🥱Apartment posted by '{post_id}' already seen."
-                                )
-                                print("__________________________")
-                                continue
 
                             see_mores = post.find_elements(
                                 By.XPATH, ".//div[contains(text(), 'See more')]"
@@ -239,6 +234,13 @@ def main():
                                 print(f"📝 Found post text: {text}")
                             except Exception as err:
                                 print(f"⚠️Could not find post text, to the next one")
+                                print("__________________________")
+                                continue
+
+                            if text in seen_apartments:
+                                print(
+                                    f"🥱Apartment posted by '{post_id}' already seen."
+                                )
                                 print("__________________________")
                                 continue
 
