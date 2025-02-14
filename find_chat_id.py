@@ -2,13 +2,11 @@ import asyncio
 from telegram import Bot
 from src.etc import config
 
-TELEGRAM_BOT_TOKEN = config.TELEGRAM_BOT_TOKEN
-
 
 async def main():
 
     # Create bot object
-    bot = Bot(token=TELEGRAM_BOT_TOKEN)
+    bot = Bot(token=config.TELEGRAM_BOT_TOKEN)
 
     # Get updates
     updates = await bot.get_updates()

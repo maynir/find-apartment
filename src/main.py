@@ -121,13 +121,13 @@ def main():
             browser.get("http://facebook.com")
             browser.maximize_window()
 
-            log_in(browser, config.my_email, config.password)
+            log_in(browser, config.MY_EMAIL, config.PASSWORD)
 
             while True:
                 random.shuffle(config.group_ids)
                 blocked_retries = 0
 
-                for group_id in config.group_ids[:7]:
+                for group_id in config.group_ids:
                     seen_apartments = {
                         apartment["text"]: apartment
                         for apartment in mycol.find()
@@ -277,9 +277,9 @@ def main():
                                 continue
 
                             print(f"✅ MATCH FOUND: {match_word}")
-                            message = f"Post text:\n{text}\nPosted by:\n{post_id}\nPosted by URL:\n{posted_by_url}\nGroup name:\n{group_name}\nGroup URL:\n{group_url}\n\n"
 
                             try:
+                                message = f"Post text:\n{text}\nPosted by:\n{post_id}\nPosted by URL:\n{posted_by_url}\nGroup name:\n{group_name}\nGroup URL:\n{group_url}\n\n"
                                 notifier.notify(message, imgs_src)
                             except Exception as err:
                                 print(
@@ -295,7 +295,7 @@ def main():
                     print("☑️ Finished processing group")
                     wait_with_countdown(random.randint(1, 2))
 
-                wait_with_countdown(random.randint(18, 22))
+                wait_with_countdown(random.randint(3, 5))
                 print("🔄 Restarting group search...")
         except GettingBlockedError as err:
             msg = f"👮‍♂️You probably got blocked... cooling down for {cool_down_minutes} minutes."

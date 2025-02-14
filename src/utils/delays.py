@@ -11,8 +11,8 @@ def random_num(start, end):
 
 
 def wait_with_countdown(wait_min):
-    print(f"Going to sleep now")
+    print(f"💤 Going to sleep now")
     while wait_min > 0:
-        print(f"{wait_min} min left...")
+        print(f"⏳ {wait_min} min left...")
         time.sleep(60)
         wait_min -= 1
