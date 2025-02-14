@@ -14,9 +14,10 @@ from twilio.rest import Client
 from webdriver_manager.chrome import ChromeDriverManager
 
 from etc import config
+from database import ApartmentsDBClient
 from utils import random_num, human_delay
 from utils.notifier import Notifier
-from utils.text_processing import good_words_regex, bad_words_regex
+from utils.text_processing import good_words_regex, bad_words_regex, match_info
 from utils.delays import wait_with_countdown
 
 client = Client()
@@ -110,6 +111,7 @@ option.add_argument(
 
 def main():
     notifier = Notifier()
+    apartments_client = ApartmentsDBClient()
     notifier.notify("🚀 Starting Facebook bot")
 
     while True:
@@ -128,10 +130,7 @@ def main():
                 blocked_retries = 0
 
                 for group_id in config.group_ids:
-                    seen_apartments = {
-                        apartment["text"]: apartment
-                        for apartment in mycol.find()
-                    }
+                    seen_apartments = apartments_client.get_seen_apartments()
                     group_url = f"https://www.facebook.com/groups/{group_id}?sorting_setting={config.group_id_to_sorting[group_id]}"
 
                     browser.get(group_url)
@@ -199,7 +198,6 @@ def main():
                             except Exception as err:
                                 print(f"⚠️Could not find post author")
 
-
                             see_mores = post.find_elements(
                                 By.XPATH, ".//div[contains(text(), 'See more')]"
                             )
@@ -238,26 +236,29 @@ def main():
                                 continue
 
                             try:
-                                imgs = post.find_elements(By.XPATH, ".//*[@class='x6ikm8r x10wlt62 x10l6tqk']//img")
+                                imgs = post.find_elements(
+                                    By.XPATH,
+                                    ".//*[@class='x6ikm8r x10wlt62 x10l6tqk']//img",
+                                )
                                 imgs_src = [img.get_attribute("src") for img in imgs]
                                 print(f"📷 Found {len(imgs_src)} post images ")
                             except Exception as err:
                                 print(f"⚠️Could not find post images")
                                 imgs_src = []
 
+                            good_match_word = good_words_regex.search(text)
+                            bad_match_word = bad_words_regex.search(text)
+                            is_good_match_word = bool(good_match_word)
+                            is_bad_match_word = bool(bad_match_word)
+
                             if text in seen_apartments:
                                 print(
-                                    f"🥱Apartment posted by '{post_id}' already seen."
+                                    f"🥱Apartment posted by '{post_id}' already seen - {match_info(bad_match_word, good_match_word)}"
                                 )
                                 print("__________________________")
                                 continue
 
-                            match_word = good_words_regex.search(text)
-                            bad_match_word = bad_words_regex.search(text)
-                            match = bool(match_word)
-                            bad_match = bool(bad_match_word)
-
-                            mycol.insert_one(
+                            apartments_client.save_apartment(
                                 {
                                     "apartment_id": post_id,
                                     "posted_by": post_id,
@@ -265,18 +266,18 @@ def main():
                                     "text": text,
                                     "group_name": group_name,
                                     "group_url": group_url,
-                                    "match": match,
+                                    "is_bad_match_word": is_good_match_word,
                                 }
                             )
 
-                            if bad_match or not match:
+                            if is_bad_match_word or not is_good_match_word:
                                 print(
-                                    f"👎🏼Apartment does not match criteria - bad_match_word:{bad_match_word}, match_word:{match_word}"
+                                    f"👎🏼Apartment does not match criteria - {match_info(bad_match_word, good_match_word)}"
                                 )
                                 print("__________________________")
                                 continue
 
-                            print(f"✅ MATCH FOUND: {match_word}")
+                            print(f"✅ NEW MATCH FOUND: {good_match_word.group()}")
 
                             try:
                                 message = f"Post text:\n{text}\nPosted by:\n{post_id}\nPosted by URL:\n{posted_by_url}\nGroup name:\n{group_name}\nGroup URL:\n{group_url}\n\n"

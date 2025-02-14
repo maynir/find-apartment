@@ -81,7 +81,7 @@ single_apartment_bad_words = [
     "בשכונת התקווה",
     "שכונת התקווה",
     "נווה שאנן",
-    "לבונטין"
+    "לבונטין",
 ]
 sharable_apartment_bad_words = [
     "סורי בנות",
@@ -99,3 +99,7 @@ sharable_apartment_bad_words = [
 no_living_room_word = ["בלי סלון", "אין סלון", "ללא סלון"]
 bad_words = single_apartment_bad_words
 bad_words_regex = re.compile("|".join(re.escape(x) for x in bad_words))
+
+
+def match_info(bad_match_word, good_match_word):
+    return f"bad_match_word:{bad_match_word.group() if bad_match_word else 'None'}, good_match_word:{good_match_word.group() if good_match_word else 'None'}"
