@@ -185,7 +185,10 @@ def main():
                         link_to_post = None
                         text = None
 
+                        ActionChains(browser).move_to_element(post).perform()
+
                         try:
+                            # Get posted by
                             try:
                                 time.sleep(random.randint(2, 5))
                                 posted_by = post.find_element(
@@ -201,6 +204,7 @@ def main():
                             except Exception as err:
                                 print(f"⚠️Could not find post author")
 
+                            # Click on "See more" buttons
                             see_mores = post.find_elements(
                                 By.XPATH, ".//div[contains(text(), 'See more')]"
                             )
@@ -217,16 +221,18 @@ def main():
                                     print(f"⚠️ Failed to click 'See More' button: {err}")
                                     continue
 
+                            # Get link to post
                             try:
                                 link = post.find_element(
                                     By.XPATH, ".//a[contains(@href, 'pcb')]"
                                 ).get_attribute("href")
                                 post_id = re.search(r"set=pcb\.(\d+)", link).group(1)
                                 link_to_post = f"https://www.facebook.com/groups/{group_id}/posts/{post_id}"
-                                print(f"🔗 Found link to post {link_to_post}")
+                                print(f"🔗 Found link to post: {link_to_post}")
                             except Exception as err:
                                 print(f"⚠️Could not find link to post")
 
+                            # Get posted by URL
                             try:
                                 posted_by_url = post.find_element(
                                     By.XPATH,
@@ -235,9 +241,10 @@ def main():
                                 print(f"🔗 Found post author URL")
                             except Exception as err:
                                 print(
-                                    f"⚠️Could not find post author URL: {posted_by_url}"
+                                    f"⚠️Could not find post author URL"
                                 )
 
+                            # Get post text
                             try:
                                 text = post.find_element(
                                     By.XPATH, f".//*[@data-ad-preview='message']"
@@ -248,6 +255,7 @@ def main():
                                 print("__________________________")
                                 continue
 
+                            # Get post images
                             try:
                                 imgs = post.find_elements(
                                     By.XPATH,
