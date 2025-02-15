@@ -1,7 +1,7 @@
 import random
 import sys
 import time
-
+import re
 
 import pymongo
 from selenium import webdriver
@@ -180,23 +180,36 @@ def main():
                         post = posts = browser.find_elements(
                             By.XPATH, f"//*[@class='{posts_class}']"
                         )[index]
-                        post_id = None
+                        posted_by = None
                         posted_by_url = None
+                        link_to_post = None
                         text = None
 
                         try:
                             try:
                                 time.sleep(random.randint(2, 5))
-                                post_id = post.find_element(By.TAG_NAME, "strong").text
-                                if not post_id:
+                                posted_by = post.find_element(
+                                    By.TAG_NAME, "strong"
+                                ).text
+                                if not posted_by:
                                     print("id is empty, trying again")
                                     time.sleep(2)
-                                    post_id = post.find_element(
+                                    posted_by = post.find_element(
                                         By.TAG_NAME, "strong"
                                     ).text
-                                print(f"🔍 Processing post By '{post_id}'")
+                                print(f"🔍 Processing post By '{posted_by}'")
                             except Exception as err:
                                 print(f"⚠️Could not find post author")
+
+                            try:
+                                link = post.find_element(
+                                    By.XPATH, ".//a[contains(@href, 'pcb')]"
+                                ).get_attribute("href")
+                                post_id = re.search(r"set=pcb\.(\d+)", link).group(1)
+                                link_to_post = f"https://www.facebook.com/groups/{group_id}/posts/{post_id}"
+                                print(f"🔗 Found link to post {link_to_post}")
+                            except Exception as err:
+                                print(f"⚠️Could not find link to post")
 
                             see_mores = post.find_elements(
                                 By.XPATH, ".//div[contains(text(), 'See more')]"
@@ -253,19 +266,20 @@ def main():
 
                             if text in seen_apartments:
                                 print(
-                                    f"🥱Apartment posted by '{post_id}' already seen - {match_info(bad_match_word, good_match_word)}"
+                                    f"🥱Apartment posted by '{posted_by}' already seen - {match_info(bad_match_word, good_match_word)}"
                                 )
                                 print("__________________________")
                                 continue
 
                             apartments_client.save_apartment(
                                 {
-                                    "apartment_id": post_id,
-                                    "posted_by": post_id,
+                                    "posted_by": posted_by,
                                     "posted_by_url": posted_by_url,
+                                    "link_to_post": link_to_post,
                                     "text": text,
                                     "group_name": group_name,
                                     "group_url": group_url,
+                                    "is_good_match_word": is_good_match_word,
                                     "is_bad_match_word": is_good_match_word,
                                 }
                             )
@@ -280,7 +294,7 @@ def main():
                             print(f"✅ NEW MATCH FOUND: {good_match_word.group()}")
 
                             try:
-                                message = f"Post text:\n{text}\nPosted by:\n{post_id}\nPosted by URL:\n{posted_by_url}\nGroup name:\n{group_name}\nGroup URL:\n{group_url}\n\n"
+                                message = f"Post text:\n{text}\nPosted by:\n{posted_by}\nPost URL:\n{link_to_post}\nPosted by URL:\n{posted_by_url}\nGroup name:\n{group_name}\nGroup URL:\n{group_url}\n\n"
                                 notifier.notify(message, imgs_src)
                             except Exception as err:
                                 print(
