@@ -201,16 +201,6 @@ def main():
                             except Exception as err:
                                 print(f"⚠️Could not find post author")
 
-                            try:
-                                link = post.find_element(
-                                    By.XPATH, ".//a[contains(@href, 'pcb')]"
-                                ).get_attribute("href")
-                                post_id = re.search(r"set=pcb\.(\d+)", link).group(1)
-                                link_to_post = f"https://www.facebook.com/groups/{group_id}/posts/{post_id}"
-                                print(f"🔗 Found link to post {link_to_post}")
-                            except Exception as err:
-                                print(f"⚠️Could not find link to post")
-
                             see_mores = post.find_elements(
                                 By.XPATH, ".//div[contains(text(), 'See more')]"
                             )
@@ -226,6 +216,16 @@ def main():
                                 except Exception as err:
                                     print(f"⚠️ Failed to click 'See More' button: {err}")
                                     continue
+
+                            try:
+                                link = post.find_element(
+                                    By.XPATH, ".//a[contains(@href, 'pcb')]"
+                                ).get_attribute("href")
+                                post_id = re.search(r"set=pcb\.(\d+)", link).group(1)
+                                link_to_post = f"https://www.facebook.com/groups/{group_id}/posts/{post_id}"
+                                print(f"🔗 Found link to post {link_to_post}")
+                            except Exception as err:
+                                print(f"⚠️Could not find link to post")
 
                             try:
                                 posted_by_url = post.find_element(
