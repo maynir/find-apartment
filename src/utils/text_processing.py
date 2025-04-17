@@ -7,9 +7,10 @@ single_apartment_words = [
     "רווקה",
     "ליחיד",
     "ליחידה",
+    "ליחידים",
     "מתאימה לרווק",
     "מתאימה לרווקה",
-    "סטודיו",
+    # "סטודיו",
     "דירת יחיד",
     "דירה ללא שותפים",
     "1.5 חדרים",
@@ -17,11 +18,12 @@ single_apartment_words = [
     "חדר שינה וסלון",
     "חדר שינה + חדר עבודה",
     "דירת שני חדרים",
+    "דירת 2 חדרים",
     "דירת חדר וחצי",
-    "דירת חדר אחד",
+    # "דירת חדר",
     "אחד וחצי",
     "שני חדרים",
-    "שני חדרי",
+    "שניי חדרים",
     "שני חדריי",
 ]
 sharable_apartment_words = [
@@ -54,6 +56,13 @@ sharable_apartment_words = [
     "שלושה חדרים",
     "3 חדרים",
 ]
+sublet_words = [
+    "סאבלט",
+    "סבלט",
+    "מסבלטת",
+    "מסבלט",
+    "מסבלטים",
+]
 words = single_apartment_words
 good_words_regex = re.compile(r"\b(" + "|".join(re.escape(x) for x in words) + r")\b")
 
@@ -70,14 +79,18 @@ single_apartment_bad_words = [
     "בדירת שותפים",
     "מפנה את חדרי",
     "חדר בדירת",
-    "פלורנטין",
+    # "פלורנטין",
     "יד אליהו",
     "רמת גן",
     "נווה אליעזר",
     "בת ים",
     "השותפים",
     "בשכונת התקווה",
-    "שכונת התקווה"
+    "שכונת התקווה",
+    "נווה שאנן",
+    # "לבונטין",
+    # "סטודיו",
+    "למכירה"
 ]
 sharable_apartment_bad_words = [
     "סורי בנות",
@@ -95,3 +108,7 @@ sharable_apartment_bad_words = [
 no_living_room_word = ["בלי סלון", "אין סלון", "ללא סלון"]
 bad_words = single_apartment_bad_words
 bad_words_regex = re.compile("|".join(re.escape(x) for x in bad_words))
+
+
+def match_info(bad_match_word, good_match_word):
+    return f"bad_match_word:{bad_match_word.group() if bad_match_word else 'None'}, good_match_word:{good_match_word.group() if good_match_word else 'None'}"

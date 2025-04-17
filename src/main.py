@@ -1,7 +1,7 @@
 import random
 import sys
 import time
-
+import re
 
 import pymongo
 from selenium import webdriver
@@ -14,9 +14,10 @@ from twilio.rest import Client
 from webdriver_manager.chrome import ChromeDriverManager
 
 from etc import config
+from database import ApartmentsDBClient
 from utils import random_num, human_delay
 from utils.notifier import Notifier
-from utils.text_processing import good_words_regex, bad_words_regex
+from utils.text_processing import good_words_regex, bad_words_regex, match_info
 from utils.delays import wait_with_countdown
 
 client = Client()
@@ -110,6 +111,7 @@ option.add_argument(
 
 def main():
     notifier = Notifier()
+    apartments_client = ApartmentsDBClient()
     notifier.notify("🚀 Starting Facebook bot")
 
     while True:
@@ -121,17 +123,14 @@ def main():
             browser.get("http://facebook.com")
             browser.maximize_window()
 
-            log_in(browser, config.my_email, config.password)
+            log_in(browser, config.MY_EMAIL, config.PASSWORD)
 
             while True:
                 random.shuffle(config.group_ids)
                 blocked_retries = 0
 
-                for group_id in config.group_ids[:7]:
-                    seen_apartments = {
-                        apartment["text"]: apartment
-                        for apartment in mycol.find()
-                    }
+                for group_id in config.group_ids:
+                    seen_apartments = apartments_client.get_seen_apartments()
                     group_url = f"https://www.facebook.com/groups/{group_id}?sorting_setting={config.group_id_to_sorting[group_id]}"
 
                     browser.get(group_url)
@@ -143,7 +142,7 @@ def main():
                             EC.presence_of_element_located(
                                 (
                                     By.XPATH,
-                                    "//*[@class='x1i10hfl xjbqb8w x1ejq31n xd10rxx x1sy0etr x17r0tee x972fbf xcfux6l x1qhh985 xm0m39n x9f619 x1ypdohk xt0psk2 xe8uvvx xdj266r x11i5rnm xat24cr x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x16tdsg8 x1hl2dhg xggy1nq x1a2a7pz x1heor9g x1sur9pj xkrqix3 x1pd3egz']",
+                                    "//*[@class='x1i10hfl xjbqb8w x1ejq31n xd10rxx x1sy0etr x17r0tee x972fbf xcfux6l x1qhh985 xm0m39n x9f619 x1ypdohk xt0psk2 xe8uvvx xdj266r x11i5rnm xat24cr x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x16tdsg8 x1hl2dhg xggy1nq x1a2a7pz x1heor9g xkrqix3 x1sur9pj x1pd3egz']",
                                 )
                             )
                         )
@@ -181,25 +180,31 @@ def main():
                         post = posts = browser.find_elements(
                             By.XPATH, f"//*[@class='{posts_class}']"
                         )[index]
-                        post_id = None
+                        posted_by = None
                         posted_by_url = None
+                        link_to_post = None
                         text = None
 
+                        ActionChains(browser).move_to_element(post).perform()
+
                         try:
+                            # Get posted by
                             try:
                                 time.sleep(random.randint(2, 5))
-                                post_id = post.find_element(By.TAG_NAME, "strong").text
-                                if not post_id:
+                                posted_by = post.find_element(
+                                    By.TAG_NAME, "strong"
+                                ).text
+                                if not posted_by:
                                     print("id is empty, trying again")
                                     time.sleep(2)
-                                    post_id = post.find_element(
+                                    posted_by = post.find_element(
                                         By.TAG_NAME, "strong"
                                     ).text
-                                print(f"🔍 Processing post By '{post_id}'")
+                                print(f"🔍 Processing post By '{posted_by}'")
                             except Exception as err:
                                 print(f"⚠️Could not find post author")
 
-
+                            # Click on "See more" buttons
                             see_mores = post.find_elements(
                                 By.XPATH, ".//div[contains(text(), 'See more')]"
                             )
@@ -208,14 +213,26 @@ def main():
                                     ActionChains(browser).move_to_element(
                                         see_more
                                     ).perform()
+                                    browser.execute_script("arguments[0].click();", see_more)
                                     time.sleep(random.randint(5, 10))
-                                    see_more.click()
                                     print("🔋 Load More clicked")
                                     time.sleep(random.randint(5, 10))
                                 except Exception as err:
                                     print(f"⚠️ Failed to click 'See More' button: {err}")
                                     continue
 
+                            # Get link to post
+                            try:
+                                link = post.find_element(
+                                    By.XPATH, ".//a[contains(@href, 'pcb')]"
+                                ).get_attribute("href")
+                                post_id = re.search(r"set=pcb\.(\d+)", link).group(1)
+                                link_to_post = f"https://www.facebook.com/groups/{group_id}/posts/{post_id}"
+                                print(f"🔗 Found link to post: {link_to_post}")
+                            except Exception as err:
+                                print(f"⚠️Could not find link to post")
+
+                            # Get posted by URL
                             try:
                                 posted_by_url = post.find_element(
                                     By.XPATH,
@@ -224,9 +241,10 @@ def main():
                                 print(f"🔗 Found post author URL")
                             except Exception as err:
                                 print(
-                                    f"⚠️Could not find post author URL: {posted_by_url}"
+                                    f"⚠️Could not find post author URL"
                                 )
 
+                            # Get post text
                             try:
                                 text = post.find_element(
                                     By.XPATH, f".//*[@data-ad-preview='message']"
@@ -237,49 +255,54 @@ def main():
                                 print("__________________________")
                                 continue
 
+                            # Get post images
                             try:
-                                imgs = post.find_elements(By.XPATH, ".//*[@class='x6ikm8r x10wlt62 x10l6tqk']//img")
+                                imgs = post.find_elements(
+                                    By.XPATH,
+                                    ".//*[@class='x6ikm8r x10wlt62 x10l6tqk']//img",
+                                )
                                 imgs_src = [img.get_attribute("src") for img in imgs]
                                 print(f"📷 Found {len(imgs_src)} post images ")
                             except Exception as err:
                                 print(f"⚠️Could not find post images")
                                 imgs_src = []
 
+                            good_match_word = good_words_regex.search(text)
+                            bad_match_word = bad_words_regex.search(text)
+                            is_good_match_word = bool(good_match_word)
+                            is_bad_match_word = bool(bad_match_word)
+
                             if text in seen_apartments:
                                 print(
-                                    f"🥱Apartment posted by '{post_id}' already seen."
+                                    f"🥱Apartment posted by '{posted_by}' already seen - {match_info(bad_match_word, good_match_word)}"
                                 )
                                 print("__________________________")
                                 continue
 
-                            match_word = good_words_regex.search(text)
-                            bad_match_word = bad_words_regex.search(text)
-                            match = bool(match_word)
-                            bad_match = bool(bad_match_word)
-
-                            mycol.insert_one(
+                            apartments_client.save_apartment(
                                 {
-                                    "apartment_id": post_id,
-                                    "posted_by": post_id,
+                                    "posted_by": posted_by,
                                     "posted_by_url": posted_by_url,
+                                    "link_to_post": link_to_post,
                                     "text": text,
                                     "group_name": group_name,
                                     "group_url": group_url,
-                                    "match": match,
+                                    "is_good_match_word": is_good_match_word,
+                                    "is_bad_match_word": is_good_match_word,
                                 }
                             )
 
-                            if bad_match or not match:
+                            if is_bad_match_word or not is_good_match_word:
                                 print(
-                                    f"👎🏼Apartment does not match criteria - bad_match_word:{bad_match_word}, match_word:{match_word}"
+                                    f"👎🏼Apartment does not match criteria - {match_info(bad_match_word, good_match_word)}"
                                 )
                                 print("__________________________")
                                 continue
 
-                            print(f"✅ MATCH FOUND: {match_word}")
-                            message = f"Post text:\n{text}\nPosted by:\n{post_id}\nPosted by URL:\n{posted_by_url}\nGroup name:\n{group_name}\nGroup URL:\n{group_url}\n\n"
+                            print(f"✅ NEW MATCH FOUND: {good_match_word.group()}")
 
                             try:
+                                message = f"Post text:\n{text}\nPosted by:\n{posted_by}\nPost URL:\n{link_to_post}\nPosted by URL:\n{posted_by_url}\nGroup name:\n{group_name}\nGroup URL:\n{group_url}\n\n"
                                 notifier.notify(message, imgs_src)
                             except Exception as err:
                                 print(
@@ -295,7 +318,7 @@ def main():
                     print("☑️ Finished processing group")
                     wait_with_countdown(random.randint(1, 2))
 
-                wait_with_countdown(random.randint(18, 22))
+                wait_with_countdown(random.randint(3, 5))
                 print("🔄 Restarting group search...")
         except GettingBlockedError as err:
             msg = f"👮‍♂️You probably got blocked... cooling down for {cool_down_minutes} minutes."
