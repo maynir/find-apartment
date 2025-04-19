@@ -257,7 +257,8 @@ def main():
                                     text = post.find_element(
                                         By.XPATH, f".//*[@data-ad-preview='message']"
                                     ).text
-                                print(f"📝 Found post text: {text}")
+                                print(f"📝 Found post text:")
+                                print(text)
                             except Exception as err:
                                 print(f"⚠️Could not find post text, to the next one")
                                 print("__________________________")
@@ -310,7 +311,7 @@ def main():
                             print(f"✅ NEW MATCH FOUND: {good_match_word.group()}")
 
                             try:
-                                message = f"Post text:\n{text}\nPosted by:\n{posted_by}\nPost URL:\n{link_to_post}\nPosted by URL:\n{posted_by_url}\nGroup name:\n{group_name}\nGroup URL:\n{group_url}\n\n"
+                                message = f"📝Post text:\n{text}\n👤  Posted by:\n{posted_by}\n🔗 Post URL:\n{link_to_post}\n🔗 Posted by URL:\n{posted_by_url}\n👥 Group name:\n{group_name}\n🔗 Group URL:\n{group_url}\n\n"
                                 notifier.notify(message, imgs_src)
                             except Exception as err:
                                 print(
@@ -338,7 +339,11 @@ def main():
             cool_down_minutes += 20
             blocked_retries = 0
         except Exception as err:
-            print(f"{err=}")
+            import traceback
+            print(f"❌ Error: {err}")
+            print("Full traceback:")
+            traceback.print_exc()
+            print("Continuing after error...")
             browser.quit()
             time.sleep(10)
 
