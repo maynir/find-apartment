@@ -180,6 +180,9 @@ def main():
                         post = posts = browser.find_elements(
                             By.XPATH, f"//*[@class='{posts_class}']"
                         )[index]
+                        if(post.find_element(By.XPATH, ".//div[@data-ad-rendering-role='story_message']")):
+                            inner_post = post.find_element(By.XPATH, ".//div[@data-ad-rendering-role='story_message']")
+                            print(f"🪏 Found post inside post")
                         posted_by = None
                         posted_by_url = None
                         link_to_post = None
@@ -246,9 +249,12 @@ def main():
 
                             # Get post text
                             try:
-                                text = post.find_element(
-                                    By.XPATH, f".//*[@data-ad-preview='message']"
-                                ).text
+                                if(inner_post):
+                                    text = inner_post.find_element(By.XPATH, f".//*[@data-ad-preview='message']").text
+                                else:
+                                    text = post.find_element(
+                                        By.XPATH, f".//*[@data-ad-preview='message']"
+                                    ).text
                                 print(f"📝 Found post text: {text}")
                             except Exception as err:
                                 print(f"⚠️Could not find post text, to the next one")
