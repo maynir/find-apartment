@@ -41,8 +41,7 @@ def scroll_down(browser):
     )
     time.sleep(random_num(8, 10))
 
-
-def log_in(browser, email, password):
+def log_in(browser, email, password, notifier):
     """Logs into Facebook while avoiding detection"""
     try:
         wait = WebDriverWait(browser, 15)
@@ -72,7 +71,9 @@ def log_in(browser, email, password):
         wait.until(
             EC.presence_of_element_located((By.XPATH, "//*[@aria-label='Home']"))
         )
-        print("✅ Login successful!")
+        print("🔓 Login successful!")
+        login_message = f"🔓 Successfully logged in to Facebook!"
+        notifier.notify(login_message)
 
         # Save session cookies
 
@@ -123,7 +124,7 @@ def main():
             browser.get("http://facebook.com")
             browser.maximize_window()
 
-            log_in(browser, config.MY_EMAIL, config.PASSWORD)
+            log_in(browser, config.MY_EMAIL, config.PASSWORD, notifier)
 
             while True:
                 random.shuffle(config.group_ids)
@@ -330,7 +331,7 @@ def main():
         except GettingBlockedError as err:
             msg = f"👮‍♂️You probably got blocked... cooling down for {cool_down_minutes} minutes."
             print(msg)
-            send_telegram_message(msg)
+            notifier.notify(msg)
             browser.quit()
             sys.exit()
             wait_with_countdown(cool_down_minutes)
