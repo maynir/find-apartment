@@ -182,8 +182,9 @@ def main():
                             By.XPATH, f"//*[@class='{posts_class}']"
                         )[index]
                         inner_post = None
-                        if post.find_element(By.XPATH, ".//div[@data-ad-rendering-role='story_message']"):
-                            inner_post = post.find_element(By.XPATH, ".//div[@data-ad-rendering-role='story_message']")
+                        story_message_elements = post.find_elements(By.XPATH, ".//div[@data-ad-rendering-role='story_message']")
+                        if story_message_elements:
+                            inner_post = story_message_elements[0]
                             print(f"🪏 Found post inside post")
                         posted_by = None
                         posted_by_url = None
