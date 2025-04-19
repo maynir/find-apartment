@@ -41,8 +41,7 @@ def scroll_down(browser):
     )
     time.sleep(random_num(8, 10))
 
-
-def log_in(browser, email, password):
+def log_in(browser, email, password, notifier):
     """Logs into Facebook while avoiding detection"""
     try:
         wait = WebDriverWait(browser, 15)
@@ -72,7 +71,9 @@ def log_in(browser, email, password):
         wait.until(
             EC.presence_of_element_located((By.XPATH, "//*[@aria-label='Home']"))
         )
-        print("✅ Login successful!")
+        print("🔓 Login successful!")
+        login_message = f"🔓 Successfully logged in to Facebook!"
+        notifier.notify(login_message)
 
         # Save session cookies
 
@@ -123,7 +124,7 @@ def main():
             browser.get("http://facebook.com")
             browser.maximize_window()
 
-            log_in(browser, config.MY_EMAIL, config.PASSWORD)
+            log_in(browser, config.MY_EMAIL, config.PASSWORD, notifier)
 
             while True:
                 random.shuffle(config.group_ids)
@@ -180,8 +181,10 @@ def main():
                         post = posts = browser.find_elements(
                             By.XPATH, f"//*[@class='{posts_class}']"
                         )[index]
-                        if(post.find_element(By.XPATH, ".//div[@data-ad-rendering-role='story_message']")):
-                            inner_post = post.find_element(By.XPATH, ".//div[@data-ad-rendering-role='story_message']")
+                        inner_post = None
+                        story_message_elements = post.find_elements(By.XPATH, ".//div[@data-ad-rendering-role='story_message']")
+                        if story_message_elements:
+                            inner_post = story_message_elements[0]
                             print(f"🪏 Found post inside post")
                         posted_by = None
                         posted_by_url = None
@@ -249,13 +252,14 @@ def main():
 
                             # Get post text
                             try:
-                                if(inner_post):
+                                if inner_post:
                                     text = inner_post.find_element(By.XPATH, f".//*[@data-ad-preview='message']").text
                                 else:
                                     text = post.find_element(
                                         By.XPATH, f".//*[@data-ad-preview='message']"
                                     ).text
-                                print(f"📝 Found post text: {text}")
+                                print(f"📝 Found post text:")
+                                print(text)
                             except Exception as err:
                                 print(f"⚠️Could not find post text, to the next one")
                                 print("__________________________")
@@ -308,7 +312,7 @@ def main():
                             print(f"✅ NEW MATCH FOUND: {good_match_word.group()}")
 
                             try:
-                                message = f"Post text:\n{text}\nPosted by:\n{posted_by}\nPost URL:\n{link_to_post}\nPosted by URL:\n{posted_by_url}\nGroup name:\n{group_name}\nGroup URL:\n{group_url}\n\n"
+                                message = f"📝Post text:\n{text}\n👤  Posted by:\n{posted_by}\n🔗 Post URL:\n{link_to_post}\n🔗 Posted by URL:\n{posted_by_url}\n👥 Group name:\n{group_name}\n🔗 Group URL:\n{group_url}\n\n"
                                 notifier.notify(message, imgs_src)
                             except Exception as err:
                                 print(
@@ -329,14 +333,18 @@ def main():
         except GettingBlockedError as err:
             msg = f"👮‍♂️You probably got blocked... cooling down for {cool_down_minutes} minutes."
             print(msg)
-            send_telegram_message(msg)
+            notifier.notify(msg)
             browser.quit()
             sys.exit()
             wait_with_countdown(cool_down_minutes)
             cool_down_minutes += 20
             blocked_retries = 0
         except Exception as err:
-            print(f"{err=}")
+            import traceback
+            print(f"❌ Error: {err}")
+            print("Full traceback:")
+            traceback.print_exc()
+            print("Continuing after error...")
             browser.quit()
             time.sleep(10)
 
