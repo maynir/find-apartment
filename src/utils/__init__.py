@@ -2,6 +2,7 @@
 from .notifier import Notifier
 from .delays import human_delay, random_num, wait_with_countdown
 from .text_processing import good_words_regex, bad_words_regex, match_info
+from .openai_helper import analyze_budget_with_openai, extract_price_from_text
 
 __all__ = [
     "Notifier",
@@ -11,4 +12,6 @@ __all__ = [
     "good_words_regex",
     "bad_words_regex",
     "match_info",
+    "analyze_budget_with_openai",
+    "extract_price_from_text",
 ]

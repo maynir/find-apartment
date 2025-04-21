@@ -3,3 +3,5 @@ PASSWORD = "your_facebook_password"
 MONGO_CONNECTION = "mongodb://localhost:27017/"
 TELEGRAM_CHAT_ID = ""
 TELEGRAM_BOT_TOKEN = ""
+OPENAI_API_KEY = "your_openai_api_key"
+BUDGET_THRESHOLD = 7000

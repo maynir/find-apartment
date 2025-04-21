@@ -19,6 +19,7 @@ from utils import random_num, human_delay
 from utils.notifier import Notifier
 from utils.text_processing import good_words_regex, bad_words_regex, match_info
 from utils.delays import wait_with_countdown
+from utils.openai_helper import analyze_budget_with_openai
 
 client = Client()
 
@@ -289,6 +290,34 @@ def main():
                                 print("__________________________")
                                 continue
 
+
+                            seen_apartments.add(text)
+
+                            if is_bad_match_word or not is_good_match_word:
+                                apartments_client.save_apartment(
+                                    {
+                                        "posted_by": posted_by,
+                                        "posted_by_url": posted_by_url,
+                                        "link_to_post": link_to_post,
+                                        "text": text,
+                                        "group_name": group_name,
+                                        "group_url": group_url,
+                                        "is_good_match_word": is_good_match_word,
+                                        "is_bad_match_word": is_bad_match_word,
+                                    }
+                                )
+                                print(
+                                    f"👎🏼Apartment does not match criteria - {match_info(bad_match_word, good_match_word)}"
+                                )
+                                print("__________________________")
+                                continue
+
+
+                            # Only check budget with OpenAI after confirming the post matches keyword criteria
+                            is_within_budget, price, explanation = analyze_budget_with_openai(text)
+                            print(f"💰 Apartment budget: {price} ILS - {explanation}")
+
+                            # Update the apartment record with price information
                             apartments_client.save_apartment(
                                 {
                                     "posted_by": posted_by,
@@ -298,22 +327,23 @@ def main():
                                     "group_name": group_name,
                                     "group_url": group_url,
                                     "is_good_match_word": is_good_match_word,
-                                    "is_bad_match_word": is_good_match_word,
+                                    "is_bad_match_word": is_bad_match_word,
+                                    "price": price,
+                                    "is_within_budget": is_within_budget,
+                                    "price_explanation": explanation
                                 }
                             )
-                            seen_apartments.add(text)
 
-                            if is_bad_match_word or not is_good_match_word:
-                                print(
-                                    f"👎🏼Apartment does not match criteria - {match_info(bad_match_word, good_match_word)}"
-                                )
+                            if price and not is_within_budget:
+                                print(f"👎🏼 Apartment exceeds budget threshold")
                                 print("__________________________")
                                 continue
 
                             print(f"✅ NEW MATCH FOUND: {good_match_word.group()}")
 
                             try:
-                                message = f"📝Post text:\n{text}\n👤  Posted by:\n{posted_by}\n🔗 Post URL:\n{link_to_post}\n🔗 Posted by URL:\n{posted_by_url}\n👥 Group name:\n{group_name}\n🔗 Group URL:\n{group_url}\n\n"
+                                price_info = f"💰 Price: {price} ILS - {explanation}" if price else ""
+                                message = f"📝Post text:\n{text}\n👤  Posted by:\n{posted_by}\n🔗 Post URL:\n{link_to_post}\n🔗 Posted by URL:\n{posted_by_url}\n👥 Group name:\n{group_name}\n🔗 Group URL:\n{group_url}\n{price_info}\n\n"
                                 notifier.notify(message, imgs_src)
                             except Exception as err:
                                 print(
