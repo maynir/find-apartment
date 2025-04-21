@@ -301,6 +301,7 @@ def main():
                                     "is_bad_match_word": is_good_match_word,
                                 }
                             )
+                            seen_apartments.add(text)
 
                             if is_bad_match_word or not is_good_match_word:
                                 print(
