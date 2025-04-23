@@ -76,8 +76,8 @@ def analyze_apartment_details_with_openai(text):
         Analyze the following apartment post text and determine:
         1. What is the price in ILS (Israeli Shekels)?
         2. What is the city name?
-        3. What is the specific address?
-        4. How many rooms does the apartment have?
+        3. What is the location? Return ONLY the street name and number WITHOUT the word 'רחוב', or if not available, return the neighborhood name.
+        4. What is the EXACT number of rooms?
         5. Give a brief, one-line summary of key location details (nearby landmarks, transportation, or features)
 
         Post text:
