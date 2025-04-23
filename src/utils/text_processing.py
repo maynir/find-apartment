@@ -145,18 +145,18 @@ def validate_match(text, price=None, city=None, rooms=None):
     is_good_match_word = bool(good_match_word)
     is_bad_match_word = bool(bad_match_word)
 
-    # If we have OpenAI data, use it to validate further
-    if any(x is not None for x in [price, city, rooms]):
-        # Bad match conditions based on OpenAI data
-        if city and not re.search(r"תל אביב", city.strip()):
-            is_bad_match_word = True
+    # # If we have OpenAI data, use it to validate further
+    # if any(x is not None for x in [price, city, rooms]):
+    #     # Bad match conditions based on OpenAI data
+    #     if city and not re.search(r"תל אביב", city.strip()):
+    #         is_bad_match_word = True
 
-        # Good match conditions based on OpenAI data
-        if rooms is not None:
-            if 1 <= rooms <= 3:  # Consider studios and up to 2.5 rooms as good matches
-                is_good_match_word = True
-            else:  # 3 or more rooms usually indicates shared apartments
-                is_bad_match_word = True
+    #     # Good match conditions based on OpenAI data
+    #     if rooms is not None:
+    #         if 1 <= rooms <= 3:  # Consider studios and up to 2.5 rooms as good matches
+    #             is_good_match_word = True
+    #         else:  # 3 or more rooms usually indicates shared apartments
+    #             is_bad_match_word = True
 
     return is_good_match_word, is_bad_match_word, good_match_word, bad_match_word
 

@@ -313,7 +313,7 @@ def main():
                                 or apartments_client.get_apartments_by_text(text)
                             ):
                                 print(
-                                    f"🥱 Apartment posted by '{posted_by}' already seen"
+                                    f"🥱Apartment posted by '{posted_by}' already seen - {match_info(bad_match_word, good_match_word)}"
                                 )
                                 print("__________________________")
                                 continue
