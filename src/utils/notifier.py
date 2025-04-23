@@ -26,8 +26,10 @@ class Notifier:
 
             print(f"✉️ Telegram message sent")
 
-    def notify(self, body, imgs_src=[]):
+    def notify(self, body, imgs_src=[], map=None):
         images = self.get_images(imgs_src)
+        if map:
+            images.append(InputMediaPhoto(map))
         asyncio.run(self.send_telegram_message(body, images))
         self.play_sound()
 

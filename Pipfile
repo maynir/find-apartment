@@ -13,6 +13,9 @@ pymongo = "*"
 twilio = "*"
 python-telegram-bot = "*"
 openai = "*"
+folium = "*"
+geopy = "*"
+pillow = "*"
 
 [dev-packages]
 black = "*"

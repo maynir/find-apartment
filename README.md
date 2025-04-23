@@ -70,6 +70,12 @@ To use my project, follow these steps:
 python3 src/main.py
 ```
 
+Install dependencies
+
+```sh
+pipenv install
+```
+
 To format the code, run:
 
 ```sh

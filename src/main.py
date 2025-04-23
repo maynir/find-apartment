@@ -17,6 +17,7 @@ from utils import human_delay, random_num
 from utils.delays import wait_with_countdown
 from utils.notifier import Notifier
 from utils.openai_helper import analyze_apartment_details_with_openai
+from utils.map_helper import generate_map_image
 from utils.text_processing import (
     bad_words_regex,
     good_words_regex,
@@ -28,6 +29,7 @@ client = Client()
 
 from selenium.webdriver.common.action_chains import ActionChains
 
+
 def move_mouse_randomly():
     """Simulates mouse movement by moving to random coordinates on the page"""
     try:
@@ -37,11 +39,13 @@ def move_mouse_randomly():
     except Exception as e:
         print(f"⚠ Mouse movement failed: {e}")
 
+
 def scroll_down(browser):
     browser.execute_script(
         "window.scrollTo({left: 0, top: document.body.scrollHeight, behavior: 'smooth'});"
     )
     time.sleep(random_num(8, 10))
+
 
 def log_in(browser, email, password, notifier):
     """Logs into Facebook while avoiding detection"""
@@ -370,7 +374,7 @@ def main():
 
                                 message = (
                                     f"🏠 NEW APARTMENT LISTING\n"
-                                    f"{'=' * 27}\n"
+                                    f"{'=' * 26}\n"
                                     f"📝 Post Content:\n{text}\n\n"
                                     f"🔍 Extracted Details:\n{details_section}\n\n"
                                     f"📱 Contact Info:\n"
@@ -381,7 +385,12 @@ def main():
                                     f"🔗 Post URL: {link_to_post}\n"
                                     f"🔗 Group URL: {group_url}\n\n"
                                 )
-                                notifier.notify(message, imgs_src)
+
+                                map_image = None
+                                if address:
+                                    map_image = generate_map_image(address, city)
+
+                                notifier.notify(message, imgs_src, map_image)
                             except Exception as err:
                                 print(
                                     f"⚠️ Could not send Telegram message: {err}, {message}"

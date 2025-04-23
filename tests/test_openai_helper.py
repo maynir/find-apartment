@@ -17,9 +17,8 @@ class TestOpenAIHelper(unittest.TestCase):
             "expected": {
                 "price": 4500,
                 "city": "תל אביב",
-                "address": "רחוב דיזנגוף 99",
+                "address": "דיזנגוף 99",
                 "rooms": 3,
-                # "location_details": "מרכז תל אביב",
             },
         },
         {
@@ -30,7 +29,6 @@ class TestOpenAIHelper(unittest.TestCase):
                 "city": "תל אביב",
                 "address": "פלורנטין",
                 "rooms": 2.5,
-                # "location_details": "שכונת פלורנטין",
             },
         },
         {
@@ -41,7 +39,16 @@ class TestOpenAIHelper(unittest.TestCase):
                 "city": "תל אביב",
                 "address": "רמת אביב ג",
                 "rooms": 4,
-                # "location_details": "צפון תל אביב",
+            },
+        },
+        {
+            "description": "Street something",
+            "text": "רחוב אייר",
+            "expected": {
+                "price": None,
+                "city": None,
+                "address": "אייר",
+                "rooms": None,
             },
         },
         {
@@ -50,7 +57,7 @@ class TestOpenAIHelper(unittest.TestCase):
             "דירה עורפית מקסימה, מרוהטת קומפלט.\n"
             "מתאימה ליחיד-סטודנט/עובד.\n"
             "בבניין ורחוב שקטים במיוחד.\n"
-            "קומה ראשונה- ק+1.\n"
+            "קומה ראשונה- קומה+1.\n"
             "חניה בשפע.\n"
             "שכירות-2,650₪\n"
             "כולל ארנונה ומים.\n"
@@ -64,10 +71,28 @@ class TestOpenAIHelper(unittest.TestCase):
             "expected": {
                 "price": 2650,
                 "city": "תל אביב",
-                "address": None,
+                "address": "התקווה",
                 "rooms": 1,
-                # "location_details":
-                #     "5 דק מהשוק והרכבת",
+            },
+        },
+        {
+            "description": "Price with dot",
+            "text": "דירת סטודיו מושלמת, ברח' חבקוק 7 100 מטר מחוף מציצים, שכ\"ד 6.350 ₪ (לא כולל חשבונות)",
+            "expected": {
+                "price": 6350,
+                "city": "תל אביב",
+                "address": "חבקוק 7",
+                "rooms": 1,
+            },
+        },
+        {
+            "description": "Price with dot",
+            "text": "חדר שינה וסלון",
+            "expected": {
+                "price": None,
+                "city": None,
+                "address": None,
+                "rooms": 2,
             },
         },
     ]
