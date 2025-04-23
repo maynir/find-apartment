@@ -81,7 +81,11 @@ single_apartment_bad_words = [
     "מתפנה חדר",
     "מפנה חדר",
     "מפנה את החדר",
-    "מחפשות שותפה" "מחפשות שותף" "מחפשים שותפה" "מחפשים שותף" "מחפשת שותפה",
+    "מחפשות שותפה",
+    "מחפשות שותף",
+    "מחפשים שותפה",
+    "מחפשים שותף" ,
+    "מחפשת שותפה",
     "מחפש שותפה",
     "מחפש שותף",
     "מחפשת שותפה",
@@ -112,7 +116,7 @@ single_apartment_bad_words = [
     "כיכר המדינה",
     "לה גוארדיה",
     # "לבונטין",
-    "סטודיו",
+    # "סטודיו",
     "למכירה",
 ]
 sharable_apartment_bad_words = [
@@ -147,16 +151,16 @@ def validate_match(text, price=None, city=None, rooms=None):
 
     # # If we have OpenAI data, use it to validate further
     # if any(x is not None for x in [price, city, rooms]):
-    #     # Bad match conditions based on OpenAI data
-    #     if city and not re.search(r"תל אביב", city.strip()):
-    #         is_bad_match_word = True
+    # Bad match conditions based on OpenAI data
+    if city and not re.search(r"תל אביב", city.strip()):
+        is_bad_match_word = True
 
-    #     # Good match conditions based on OpenAI data
-    #     if rooms is not None:
-    #         if 1 <= rooms <= 3:  # Consider studios and up to 2.5 rooms as good matches
-    #             is_good_match_word = True
-    #         else:  # 3 or more rooms usually indicates shared apartments
-    #             is_bad_match_word = True
+    # Good match conditions based on OpenAI data
+    if rooms is not None:
+        if 1 <= rooms <= 3:  # Consider studios and up to 2.5 rooms as good matches
+            is_good_match_word = True
+        else:  # 3 or more rooms usually indicates shared apartments
+            is_bad_match_word = True
 
     return is_good_match_word, is_bad_match_word, good_match_word, bad_match_word
 

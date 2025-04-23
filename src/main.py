@@ -139,7 +139,7 @@ def main():
 
                 for group_id in config.group_ids:
                     seen_apartments = apartments_client.get_seen_apartments()
-                    group_url = f"https://www.facebook.com/groups/{group_id}?sorting_setting={config.group_id_to_sorting[group_id]}"
+                    group_url = f"https://www.facebook.com/groups/{group_id}?sorting_setting=CHRONOLOGICAL"
 
                     browser.get(group_url)
                     time.sleep(random.randint(5, 7))
