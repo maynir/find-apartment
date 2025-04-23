@@ -296,8 +296,7 @@ def main():
                             print(f" 🚪 Rooms: {rooms}")
                             print(f" 🗺️ Location Details: {location_details}")
 
-                            if address:
-                                map_image = generate_map_image(address, city)
+
 
                             (
                                 is_good_match_word,
@@ -385,6 +384,11 @@ def main():
                                     f"🔗 Post URL: {link_to_post}\n"
                                     f"🔗 Group URL: {group_url}\n\n"
                                 )
+
+                                map_image = None
+                                if address:
+                                    map_image = generate_map_image(address, city)
+
                                 notifier.notify(message, imgs_src, map_image)
                             except Exception as err:
                                 print(
