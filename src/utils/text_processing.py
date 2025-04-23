@@ -118,6 +118,8 @@ single_apartment_bad_words = [
     # "לבונטין",
     # "סטודיו",
     "למכירה",
+    "נשאר שותף",
+    "נשארת שותפה",
 ]
 sharable_apartment_bad_words = [
     "סורי בנות",

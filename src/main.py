@@ -375,7 +375,7 @@ def main():
 
                                 message = (
                                     f"🏠 NEW APARTMENT LISTING\n"
-                                    f"{'=' * 30}\n"
+                                    f"{'=' * 27}\n"
                                     f"📝 Post Content:\n{text}\n\n"
                                     f"🔍 Extracted Details:\n{details_section}\n\n"
                                     f"📱 Contact Info:\n"
