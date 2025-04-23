@@ -17,6 +17,7 @@ from utils import human_delay, random_num
 from utils.delays import wait_with_countdown
 from utils.notifier import Notifier
 from utils.openai_helper import analyze_apartment_details_with_openai
+from utils.map_helper import generate_map_image
 from utils.text_processing import (
     bad_words_regex,
     good_words_regex,
@@ -295,6 +296,9 @@ def main():
                             print(f" 🚪 Rooms: {rooms}")
                             print(f" 🗺️ Location Details: {location_details}")
 
+                            if address:
+                                map_image = generate_map_image(address, city)
+
                             (
                                 is_good_match_word,
                                 is_bad_match_word,
@@ -381,7 +385,7 @@ def main():
                                     f"🔗 Post URL: {link_to_post}\n"
                                     f"🔗 Group URL: {group_url}\n\n"
                                 )
-                                notifier.notify(message, imgs_src)
+                                notifier.notify(message, imgs_src, map_image)
                             except Exception as err:
                                 print(
                                     f"⚠️ Could not send Telegram message: {err}, {message}"
