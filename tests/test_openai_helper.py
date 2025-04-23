@@ -85,6 +85,16 @@ class TestOpenAIHelper(unittest.TestCase):
                 "rooms": 1,
             },
         },
+        {
+            "description": "Price with dot",
+            "text": "חדר שינה וסלון",
+            "expected": {
+                "price": None,
+                "city": None,
+                "address": None,
+                "rooms": 2,
+            },
+        },
     ]
 
     def test_analyze_apartment_details_with_openai_real_api(self):

@@ -124,6 +124,8 @@ single_apartment_bad_words = [
     "למכירה",
     "נשאר שותף",
     "נשארת שותפה",
+    "שכונת לבנה",
+    "בשכונת לבנה",
 ]
 sharable_apartment_bad_words = [
     "סורי בנות",

@@ -29,6 +29,7 @@ client = Client()
 
 from selenium.webdriver.common.action_chains import ActionChains
 
+
 def move_mouse_randomly():
     """Simulates mouse movement by moving to random coordinates on the page"""
     try:
@@ -38,11 +39,13 @@ def move_mouse_randomly():
     except Exception as e:
         print(f"⚠ Mouse movement failed: {e}")
 
+
 def scroll_down(browser):
     browser.execute_script(
         "window.scrollTo({left: 0, top: document.body.scrollHeight, behavior: 'smooth'});"
     )
     time.sleep(random_num(8, 10))
+
 
 def log_in(browser, email, password, notifier):
     """Logs into Facebook while avoiding detection"""
