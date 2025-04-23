@@ -7,10 +7,10 @@ def get_coordinates(address, city):
     """Get coordinates for an address using Nominatim geocoder"""
     if not address and not city:
         return None
-    
+
     # Prepare the search query
     search_query = f"{address}, {city}, ישראל" if address else f"{city}, ישראל"
-    
+
     try:
         geolocator = Nominatim(user_agent="find-apartment-bot")
         location = geolocator.geocode(search_query)
@@ -25,18 +25,16 @@ def generate_map_image(address, city):
     coordinates = get_coordinates(address, city)
     if not coordinates:
         return None
-        
+
     m = folium.Map(location=coordinates, zoom_start=15)
-    
+
     # Add a marker for the location
     folium.Marker(
-        coordinates,
-        popup=address,
-        icon=folium.Icon(color='red', icon='info-sign')
+        coordinates, popup=address, icon=folium.Icon(color="red", icon="info-sign")
     ).add_to(m)
-    
+
     # Save map to BytesIO
     img_data = m._to_png()
     img_io = BytesIO(img_data)
-    
+
     return img_io

@@ -75,6 +75,16 @@ class TestOpenAIHelper(unittest.TestCase):
                 "rooms": 1,
             },
         },
+        {
+            "description": "Price with dot",
+            "text": "דירת סטודיו מושלמת, ברח' חבקוק 7 100 מטר מחוף מציצים, שכ\"ד 6.350 ₪ (לא כולל חשבונות)",
+            "expected": {
+                "price": 6350,
+                "city": "תל אביב",
+                "address": "חבקוק 7",
+                "rooms": 1,
+            },
+        },
     ]
 
     def test_analyze_apartment_details_with_openai_real_api(self):

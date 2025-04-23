@@ -78,6 +78,10 @@ words = single_apartment_words
 good_words_regex = re.compile(r"\b(" + "|".join(re.escape(x) for x in words) + r")\b")
 
 single_apartment_bad_words = [
+    "מחפשת דירה",
+    "מחפשת דירת",
+    "מחפש דירה",
+    "מחפש דירת",
     "מתפנה חדר",
     "מפנה חדר",
     "מפנה את החדר",

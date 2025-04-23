@@ -296,8 +296,6 @@ def main():
                             print(f" 🚪 Rooms: {rooms}")
                             print(f" 🗺️ Location Details: {location_details}")
 
-
-
                             (
                                 is_good_match_word,
                                 is_bad_match_word,
