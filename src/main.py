@@ -184,7 +184,7 @@ def main():
                     print("__________________________")
 
                     for index, post in enumerate(posts):
-                        post = posts = browser.find_elements(
+                        post = browser.find_elements(
                             By.XPATH, f"//*[@class='{posts_class}']"
                         )[index]
                         inner_post = None
