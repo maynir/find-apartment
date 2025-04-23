@@ -1,10 +1,12 @@
-from telegram import Bot, InputMediaPhoto
 import asyncio
-from etc import config
-import platform
 import os
-import requests
+import platform
 from io import BytesIO
+
+import requests
+from telegram import Bot, InputMediaPhoto
+
+from etc import config
 
 
 class Notifier:

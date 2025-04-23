@@ -1,7 +1,7 @@
 import random
+import re
 import sys
 import time
-import re
 
 import pymongo
 from selenium import webdriver
@@ -13,13 +13,18 @@ from selenium.webdriver.support.ui import WebDriverWait
 from twilio.rest import Client
 from webdriver_manager.chrome import ChromeDriverManager
 
-from etc import config
 from database import ApartmentsDBClient
-from utils import random_num, human_delay
-from utils.notifier import Notifier
-from utils.text_processing import good_words_regex, bad_words_regex, match_info
+from etc import config
+from utils import human_delay, random_num
 from utils.delays import wait_with_countdown
-from utils.openai_helper import analyze_budget_with_openai
+from utils.notifier import Notifier
+from utils.openai_helper import analyze_apartment_details_with_openai
+from utils.text_processing import (
+    bad_words_regex,
+    good_words_regex,
+    match_info,
+    validate_match,
+)
 
 client = Client()
 
@@ -41,6 +46,7 @@ def scroll_down(browser):
         "window.scrollTo({left: 0, top: document.body.scrollHeight, behavior: 'smooth'});"
     )
     time.sleep(random_num(8, 10))
+
 
 def log_in(browser, email, password, notifier):
     """Logs into Facebook while avoiding detection"""
@@ -183,7 +189,9 @@ def main():
                             By.XPATH, f"//*[@class='{posts_class}']"
                         )[index]
                         inner_post = None
-                        story_message_elements = post.find_elements(By.XPATH, ".//div[@data-ad-rendering-role='story_message']")
+                        story_message_elements = post.find_elements(
+                            By.XPATH, ".//div[@data-ad-rendering-role='story_message']"
+                        )
                         if story_message_elements:
                             inner_post = story_message_elements[0]
                             print(f"🪏 Found post inside post")
@@ -220,7 +228,9 @@ def main():
                                     ActionChains(browser).move_to_element(
                                         see_more
                                     ).perform()
-                                    browser.execute_script("arguments[0].click();", see_more)
+                                    browser.execute_script(
+                                        "arguments[0].click();", see_more
+                                    )
                                     time.sleep(random.randint(5, 10))
                                     print("🔋 Load More clicked")
                                     time.sleep(random.randint(5, 10))
@@ -247,20 +257,21 @@ def main():
                                 ).get_attribute("href")
                                 print(f"🔗 Found post author URL")
                             except Exception as err:
-                                print(
-                                    f"⚠️Could not find post author URL"
-                                )
+                                print(f"⚠️Could not find post author URL")
 
                             # Get post text
                             try:
                                 if inner_post:
-                                    text = inner_post.find_element(By.XPATH, f".//*[@data-ad-preview='message']").text
+                                    text = inner_post.find_element(
+                                        By.XPATH, f".//*[@data-ad-preview='message']"
+                                    ).text
                                 else:
                                     text = post.find_element(
                                         By.XPATH, f".//*[@data-ad-preview='message']"
                                     ).text
                                 print(f"📝 Found post text:")
                                 print(text)
+
                             except Exception as err:
                                 print(f"⚠️Could not find post text, to the next one")
                                 print("__________________________")
@@ -278,46 +289,35 @@ def main():
                                 print(f"⚠️Could not find post images")
                                 imgs_src = []
 
-                            good_match_word = good_words_regex.search(text)
-                            bad_match_word = bad_words_regex.search(text)
-                            is_good_match_word = bool(good_match_word)
-                            is_bad_match_word = bool(bad_match_word)
+                            price, city, address, rooms, location_details = (
+                                analyze_apartment_details_with_openai(text)
+                            )
 
-                            if text in seen_apartments:
+                            print(f"🤖 OpenAI Analysis Results:")
+                            print(f" 💰 Price: {price} ILS")
+                            print(f" 🏙️ City: {city}")
+                            print(f" 📍 Address: {address}")
+                            print(f" 🚪 Rooms: {rooms}")
+                            print(f" 🗺️ Location Details: {location_details}")
+
+                            (
+                                is_good_match_word,
+                                is_bad_match_word,
+                                good_match_word,
+                                bad_match_word,
+                            ) = validate_match(text, price, city, rooms)
+
+                            # Check for duplicate posts before running expensive OpenAI analysis
+                            if (
+                                text in seen_apartments
+                                or apartments_client.get_apartments_by_text(text)
+                            ):
                                 print(
-                                    f"🥱Apartment posted by '{posted_by}' already seen - {match_info(bad_match_word, good_match_word)}"
+                                    f"🥱 Apartment posted by '{posted_by}' already seen"
                                 )
                                 print("__________________________")
                                 continue
 
-
-                            seen_apartments.add(text)
-
-                            if is_bad_match_word or not is_good_match_word:
-                                apartments_client.save_apartment(
-                                    {
-                                        "posted_by": posted_by,
-                                        "posted_by_url": posted_by_url,
-                                        "link_to_post": link_to_post,
-                                        "text": text,
-                                        "group_name": group_name,
-                                        "group_url": group_url,
-                                        "is_good_match_word": is_good_match_word,
-                                        "is_bad_match_word": is_bad_match_word,
-                                    }
-                                )
-                                print(
-                                    f"👎🏼Apartment does not match criteria - {match_info(bad_match_word, good_match_word)}"
-                                )
-                                print("__________________________")
-                                continue
-
-
-                            # Only check budget with OpenAI after confirming the post matches keyword criteria
-                            is_within_budget, price, explanation = analyze_budget_with_openai(text)
-                            print(f"💰 Apartment budget: {price} ILS - {explanation}")
-
-                            # Update the apartment record with price information
                             apartments_client.save_apartment(
                                 {
                                     "posted_by": posted_by,
@@ -329,12 +329,23 @@ def main():
                                     "is_good_match_word": is_good_match_word,
                                     "is_bad_match_word": is_bad_match_word,
                                     "price": price,
-                                    "is_within_budget": is_within_budget,
-                                    "price_explanation": explanation
+                                    "city": city,
+                                    "address": address,
+                                    "rooms": rooms,
+                                    "location_details": location_details,
+                                    "is_within_budget": price
+                                    and price <= config.BUDGET_THRESHOLD,
                                 }
                             )
 
-                            if price and not is_within_budget:
+                            if is_bad_match_word or not is_good_match_word:
+                                print(
+                                    f"👎🏼Apartment does not match criteria - {match_info(bad_match_word, good_match_word)}"
+                                )
+                                print("__________________________")
+                                continue
+
+                            if price and price > config.BUDGET_THRESHOLD:
                                 print(f"👎🏼 Apartment exceeds budget threshold")
                                 print("__________________________")
                                 continue
@@ -342,8 +353,39 @@ def main():
                             print(f"✅ NEW MATCH FOUND: {good_match_word.group()}")
 
                             try:
-                                price_info = f"💰 Price: {price} ILS - {explanation}" if price else ""
-                                message = f"📝Post text:\n{text}\n👤  Posted by:\n{posted_by}\n🔗 Post URL:\n{link_to_post}\n🔗 Posted by URL:\n{posted_by_url}\n👥 Group name:\n{group_name}\n🔗 Group URL:\n{group_url}\n{price_info}\n\n"
+                                apartment_details = []
+                                if price:
+                                    apartment_details.append(f"💰 Price: {price:,} ILS")
+                                if city:
+                                    apartment_details.append(f"🏙️ City: {city}")
+                                if address:
+                                    apartment_details.append(f"📍 Address: {address}")
+                                if rooms:
+                                    apartment_details.append(f"🚪 Rooms: {rooms}")
+                                if location_details:
+                                    apartment_details.append(
+                                        f"📌 Location Details: {location_details}"
+                                    )
+
+                                details_section = (
+                                    "\n".join(apartment_details)
+                                    if apartment_details
+                                    else "No details extracted"
+                                )
+
+                                message = (
+                                    f"🏠 NEW APARTMENT LISTING\n"
+                                    f"{'=' * 30}\n"
+                                    f"📝 Post Content:\n{text}\n\n"
+                                    f"🔍 Extracted Details:\n{details_section}\n\n"
+                                    f"📱 Contact Info:\n"
+                                    f"👤 Posted by: {posted_by}\n"
+                                    f"🔗 Profile: {posted_by_url}\n\n"
+                                    f"📍 Source:\n"
+                                    f"👥 Group: {group_name}\n"
+                                    f"🔗 Post URL: {link_to_post}\n"
+                                    f"🔗 Group URL: {group_url}\n\n"
+                                )
                                 notifier.notify(message, imgs_src)
                             except Exception as err:
                                 print(
@@ -372,6 +414,7 @@ def main():
             blocked_retries = 0
         except Exception as err:
             import traceback
+
             print(f"❌ Error: {err}")
             print("Full traceback:")
             traceback.print_exc()

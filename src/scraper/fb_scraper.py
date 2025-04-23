@@ -1,17 +1,18 @@
 import asyncio
 import random
 import time
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.keys import Keys
 
-from . import scroll_down
-from ..utils.delays import human_delay, random_num
-from ..utils.text_processing import good_words_regex, bad_words_regex
-from ..utils.notifier import send_telegram_message
-from ..database.mongo_client import save_apartment, get_seen_apartments
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+
+from ..database.mongo_client import get_seen_apartments, save_apartment
 from ..etc import config
+from ..utils.delays import human_delay, random_num
+from ..utils.notifier import send_telegram_message
+from ..utils.text_processing import bad_words_regex, good_words_regex
+from . import scroll_down
 
 
 class GettingBlockedError(Exception):

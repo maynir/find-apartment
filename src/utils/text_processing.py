@@ -14,8 +14,12 @@ single_apartment_words = [
     "דירת יחיד",
     "דירה ללא שותפים",
     "1.5 חדרים",
+    "1.5 חד",
+    "1.5 חד'",
     "אחד וחצי חדרים",
     "2 חדרים",
+    "2 חד",
+    "2 חד,",
     "חדר שינה וסלון",
     "חדר שינה + חדר עבודה",
     "שני חדרים",
@@ -26,7 +30,7 @@ single_apartment_words = [
     "שני חדרים",
     "שניי חדרים",
     "שני חדריי",
-    "2.5 חדרים" ,
+    "2.5 חדרים",
     "שתיים וחצי חדרים",
     "שניים וחצי חדרים",
     "פרטר",
@@ -76,7 +80,8 @@ good_words_regex = re.compile(r"\b(" + "|".join(re.escape(x) for x in words) + r
 single_apartment_bad_words = [
     "מתפנה חדר",
     "מפנה חדר",
-    "מחפשת שותפה",
+    "מפנה את החדר",
+    "מחפשות שותפה" "מחפשות שותף" "מחפשים שותפה" "מחפשים שותף" "מחפשת שותפה",
     "מחפש שותפה",
     "מחפש שותף",
     "מחפשת שותפה",
@@ -108,7 +113,7 @@ single_apartment_bad_words = [
     "לה גוארדיה",
     # "לבונטין",
     "סטודיו",
-    "למכירה"
+    "למכירה",
 ]
 sharable_apartment_bad_words = [
     "סורי בנות",
@@ -126,6 +131,34 @@ sharable_apartment_bad_words = [
 no_living_room_word = ["בלי סלון", "אין סלון", "ללא סלון"]
 bad_words = single_apartment_bad_words
 bad_words_regex = re.compile("|".join(re.escape(x) for x in bad_words))
+
+
+def validate_match(text, price=None, city=None, rooms=None):
+    """
+    Validates if an apartment posting is a good match based on both regex and OpenAI extracted data.
+    Returns a tuple of (is_good_match, is_bad_match, good_match_word, bad_match_word)
+    """
+    good_match_word = good_words_regex.search(text)
+    bad_match_word = bad_words_regex.search(text)
+
+    # Initial check based on regex
+    is_good_match_word = bool(good_match_word)
+    is_bad_match_word = bool(bad_match_word)
+
+    # If we have OpenAI data, use it to validate further
+    if any(x is not None for x in [price, city, rooms]):
+        # Bad match conditions based on OpenAI data
+        if city and not re.search(r"תל אביב", city.strip()):
+            is_bad_match_word = True
+
+        # Good match conditions based on OpenAI data
+        if rooms is not None:
+            if 1 <= rooms <= 3:  # Consider studios and up to 2.5 rooms as good matches
+                is_good_match_word = True
+            else:  # 3 or more rooms usually indicates shared apartments
+                is_bad_match_word = True
+
+    return is_good_match_word, is_bad_match_word, good_match_word, bad_match_word
 
 
 def match_info(bad_match_word, good_match_word):
