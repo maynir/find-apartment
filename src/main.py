@@ -2,7 +2,6 @@ import random
 import re
 import sys
 import time
-
 import pymongo
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -12,7 +11,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from twilio.rest import Client
 from webdriver_manager.chrome import ChromeDriverManager
-
 from database import ApartmentsDBClient
 from etc import config
 from utils import human_delay, random_num
@@ -30,7 +28,6 @@ client = Client()
 
 from selenium.webdriver.common.action_chains import ActionChains
 
-
 def move_mouse_randomly():
     """Simulates mouse movement by moving to random coordinates on the page"""
     try:
@@ -40,13 +37,11 @@ def move_mouse_randomly():
     except Exception as e:
         print(f"⚠ Mouse movement failed: {e}")
 
-
 def scroll_down(browser):
     browser.execute_script(
         "window.scrollTo({left: 0, top: document.body.scrollHeight, behavior: 'smooth'});"
     )
     time.sleep(random_num(8, 10))
-
 
 def log_in(browser, email, password, notifier):
     """Logs into Facebook while avoiding detection"""
