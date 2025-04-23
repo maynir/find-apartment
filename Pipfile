@@ -12,6 +12,7 @@ telegram-send = "*"
 pymongo = "*"
 twilio = "*"
 python-telegram-bot = "*"
+openai = "*"
 
 [dev-packages]
 black = "*"

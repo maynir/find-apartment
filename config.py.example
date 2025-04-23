@@ -1,5 +1,0 @@
-MY_EMAIL = "your_facebook_email@gmail.com"
-PASSWORD = "your_facebook_password"
-MONGO_CONNECTION = "mongodb://localhost:27017/"
-TELEGRAM_CHAT_ID = ""
-TELEGRAM_BOT_TOKEN = ""

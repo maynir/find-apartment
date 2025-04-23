@@ -1,5 +1,6 @@
 .vscode
 PyWhatKit_DB.txt
 src/etc/config.py
+etc/config.py
 __pycache__
 /.idea/

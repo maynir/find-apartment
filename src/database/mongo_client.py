@@ -1,4 +1,5 @@
 import pymongo
+
 from etc import config
 
 
