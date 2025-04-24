@@ -120,8 +120,9 @@ def main():
     notifier = Notifier()
     apartments_client = ApartmentsDBClient()
     notifier.notify("🚀 Starting Facebook bot")
+    shouldRun = True
 
-    while True:
+    while shouldRun:
         try:
             browser = webdriver.Chrome(
                 service=webdriver.ChromeService(ChromeDriverManager().install()),
@@ -165,10 +166,8 @@ def main():
                     )
                     if len(posts) in (0, 1):
                         blocked_retries += 1
-                        print(f"🔄 Found {len(posts)} posts, refreshing page...")
-                        browser.refresh()
-                        time.sleep(random.randint(5, 7))
-                        scroll_down(browser)
+                        ActionChains(browser).send_keys(Keys.ESCAPE).perform()
+                        print(f"🔄 Found {len(posts)} posts, clicking escape to close the modal")
                         posts = browser.find_elements(
                             By.XPATH, f"//*[@class='{posts_class}']"
                         )
@@ -204,7 +203,7 @@ def main():
                         try:
                             # Get posted by
                             try:
-                                time.sleep(random.randint(2, 5))
+                                time.sleep(random.randint(4, 7))
                                 posted_by = post.find_element(
                                     By.TAG_NAME, "strong"
                                 ).text
@@ -288,6 +287,20 @@ def main():
                                 print(f"⚠️Could not find post images")
                                 imgs_src = []
 
+                            good_match_word = good_words_regex.search(text)
+                            bad_match_word = bad_words_regex.search(text)
+
+                            # Check for duplicate posts before running expensive OpenAI analysis
+                            if (
+                                text in seen_apartments
+                                or apartments_client.get_apartments_by_text(text)
+                            ):
+                                print(
+                                    f"🥱Apartment posted by '{posted_by}' already seen - {match_info(bad_match_word, good_match_word)}"
+                                )
+                                print("__________________________")
+                                continue
+
                             price, city, address, rooms, location_details = (
                                 analyze_apartment_details_with_openai(text)
                             )
@@ -305,17 +318,6 @@ def main():
                                 good_match_word,
                                 bad_match_word,
                             ) = validate_match(text, price, city, rooms)
-
-                            # Check for duplicate posts before running expensive OpenAI analysis
-                            if (
-                                text in seen_apartments
-                                or apartments_client.get_apartments_by_text(text)
-                            ):
-                                print(
-                                    f"🥱Apartment posted by '{posted_by}' already seen - {match_info(bad_match_word, good_match_word)}"
-                                )
-                                print("__________________________")
-                                continue
 
                             apartments_client.save_apartment(
                                 {
@@ -411,11 +413,12 @@ def main():
             msg = f"👮‍♂️You probably got blocked... cooling down for {cool_down_minutes} minutes."
             print(msg)
             notifier.notify(msg)
+            shouldRun = False
             browser.quit()
             sys.exit()
-            wait_with_countdown(cool_down_minutes)
-            cool_down_minutes += 20
-            blocked_retries = 0
+            # wait_with_countdown(cool_down_minutes)
+            # cool_down_minutes += 20
+            # blocked_retries = 0
         except Exception as err:
             import traceback
 
