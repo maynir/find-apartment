@@ -262,18 +262,25 @@ def main():
                                 if inner_post:
                                     text = inner_post.find_element(
                                         By.XPATH, f".//*[@data-ad-preview='message']"
-                                    ).text
+                                    ).text.strip()
                                 else:
                                     text = post.find_element(
                                         By.XPATH, f".//*[@data-ad-preview='message']"
-                                    ).text
+                                    ).text.strip()
                                 print(f"📝 Found post text:")
                                 print(text)
-
                             except Exception as err:
                                 print(f"⚠️Could not find post text, to the next one")
                                 print("__________________________")
                                 continue
+
+                            try:
+                                if(post.find_elements(By.XPATH,".//span[@class='x193iq5w xeuugli x13faqbe x1vvkbs x1xmvt09 x6prxxf xvq8zen x1s688f xzsf02u']")):
+                                    price_text = post.find_elements(By.XPATH,".//span[@class='x193iq5w xeuugli x13faqbe x1vvkbs x1xmvt09 x6prxxf xvq8zen x1s688f xzsf02u']")[1].text
+                                    text = f"{text}\nPrice: {price_text}".strip()
+                                    print(f"💰 Found price post section: {price_text}")
+                            except Exception as err:
+                                print(f"⚠️Could not find price post section")
 
                             # Get post images
                             try:
@@ -292,7 +299,7 @@ def main():
 
                             # Check for duplicate posts before running expensive OpenAI analysis
                             if (
-                                text in seen_apartments
+                                text.strip() in seen_apartments
                                 or apartments_client.get_apartments_by_text(text)
                             ):
                                 print(
@@ -405,7 +412,7 @@ def main():
                             continue
 
                     print("☑️ Finished processing group")
-                    wait_with_countdown(random.randint(1, 2))
+                    wait_with_countdown(random.randint(3, 4))
 
                 wait_with_countdown(random.randint(3, 5))
                 print("🔄 Restarting group search...")
