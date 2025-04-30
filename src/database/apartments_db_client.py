@@ -11,7 +11,7 @@ class ApartmentsDBClient:
 
     def get_seen_apartments(self):
         return {
-            apartment["text"]
+            apartment["text"].strip()
             for apartment in self.client.find_all(self.collection_name)
         }
 

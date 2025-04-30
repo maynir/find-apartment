@@ -16,6 +16,8 @@ openai = "*"
 folium = "*"
 geopy = "*"
 pillow = "*"
+selenium-wire = "*"
+blinker = "*"
 
 [dev-packages]
 black = "*"

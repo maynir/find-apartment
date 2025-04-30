@@ -120,8 +120,9 @@ def main():
     notifier = Notifier()
     apartments_client = ApartmentsDBClient()
     notifier.notify("🚀 Starting Facebook bot")
+    shouldRun = True
 
-    while True:
+    while shouldRun:
         try:
             browser = webdriver.Chrome(
                 service=webdriver.ChromeService(ChromeDriverManager().install()),
@@ -165,10 +166,8 @@ def main():
                     )
                     if len(posts) in (0, 1):
                         blocked_retries += 1
-                        print(f"🔄 Found {len(posts)} posts, refreshing page...")
-                        browser.refresh()
-                        time.sleep(random.randint(5, 7))
-                        scroll_down(browser)
+                        ActionChains(browser).send_keys(Keys.ESCAPE).perform()
+                        print(f"🔄 Found {len(posts)} posts, clicking escape to close the modal")
                         posts = browser.find_elements(
                             By.XPATH, f"//*[@class='{posts_class}']"
                         )
@@ -184,7 +183,7 @@ def main():
                     print("__________________________")
 
                     for index, post in enumerate(posts):
-                        post = posts = browser.find_elements(
+                        post = browser.find_elements(
                             By.XPATH, f"//*[@class='{posts_class}']"
                         )[index]
                         inner_post = None
@@ -198,13 +197,14 @@ def main():
                         posted_by_url = None
                         link_to_post = None
                         text = None
+                        price_text = None
 
                         ActionChains(browser).move_to_element(post).perform()
 
                         try:
                             # Get posted by
                             try:
-                                time.sleep(random.randint(2, 5))
+                                time.sleep(random.randint(4, 7))
                                 posted_by = post.find_element(
                                     By.TAG_NAME, "strong"
                                 ).text
@@ -263,18 +263,24 @@ def main():
                                 if inner_post:
                                     text = inner_post.find_element(
                                         By.XPATH, f".//*[@data-ad-preview='message']"
-                                    ).text
+                                    ).text.strip()
                                 else:
                                     text = post.find_element(
                                         By.XPATH, f".//*[@data-ad-preview='message']"
-                                    ).text
+                                    ).text.strip()
                                 print(f"📝 Found post text:")
                                 print(text)
-
                             except Exception as err:
                                 print(f"⚠️Could not find post text, to the next one")
                                 print("__________________________")
                                 continue
+
+                            try:
+                                if(post.find_elements(By.XPATH,".//span[@class='x193iq5w xeuugli x13faqbe x1vvkbs x1xmvt09 x6prxxf xvq8zen x1s688f xzsf02u']")):
+                                    price_text = post.find_elements(By.XPATH,".//span[@class='x193iq5w xeuugli x13faqbe x1vvkbs x1xmvt09 x6prxxf xvq8zen x1s688f xzsf02u']")[1].text
+                                    print(f"💰 Found price post section: {price_text}")
+                            except Exception as err:
+                                print(f"⚠️Could not find price post section")
 
                             # Get post images
                             try:
@@ -288,23 +294,8 @@ def main():
                                 print(f"⚠️Could not find post images")
                                 imgs_src = []
 
-                            price, city, address, rooms, location_details = (
-                                analyze_apartment_details_with_openai(text)
-                            )
-
-                            print(f"🤖 OpenAI Analysis Results:")
-                            print(f" 💰 Price: {price} ILS")
-                            print(f" 🏙️ City: {city}")
-                            print(f" 📍 Address: {address}")
-                            print(f" 🚪 Rooms: {rooms}")
-                            print(f" 🗺️ Location Details: {location_details}")
-
-                            (
-                                is_good_match_word,
-                                is_bad_match_word,
-                                good_match_word,
-                                bad_match_word,
-                            ) = validate_match(text, price, city, rooms)
+                            good_match_word = good_words_regex.search(text)
+                            bad_match_word = bad_words_regex.search(text)
 
                             # Check for duplicate posts before running expensive OpenAI analysis
                             if (
@@ -316,6 +307,25 @@ def main():
                                 )
                                 print("__________________________")
                                 continue
+
+                            price, city, address, rooms, location_details, close_to_sea = (
+                                analyze_apartment_details_with_openai(f"{text}\nPrice: {price_text}")
+                            )
+
+                            print(f"🤖 OpenAI Analysis Results:")
+                            print(f" 💰 Price: {price} ILS")
+                            print(f" 🏙️ City: {city}")
+                            print(f" 📍 Address: {address}, City: {city}")
+                            print(f" 🚪 Rooms: {rooms}")
+                            print(f" 🌊 Close to sea: {close_to_sea}")
+                            print(f" 🗺️ Location Details: {location_details}")
+
+                            (
+                                is_good_match_word,
+                                is_bad_match_word,
+                                good_match_word,
+                                bad_match_word,
+                            ) = validate_match(text, price, city, rooms)
 
                             apartments_client.save_apartment(
                                 {
@@ -332,6 +342,7 @@ def main():
                                     "address": address,
                                     "rooms": rooms,
                                     "location_details": location_details,
+                                    "close_to_sea": close_to_sea,
                                     "is_within_budget": price
                                     and price <= config.BUDGET_THRESHOLD,
                                 }
@@ -349,7 +360,7 @@ def main():
                                 print("__________________________")
                                 continue
 
-                            print(f"✅ NEW MATCH FOUND: {good_match_word.group()}")
+                            print(f"✅ NEW MATCH FOUND")
 
                             try:
                                 apartment_details = []
@@ -364,6 +375,10 @@ def main():
                                 if location_details:
                                     apartment_details.append(
                                         f"📌 Location Details: {location_details}"
+                                    )
+                                if close_to_sea:
+                                    apartment_details.append(
+                                        f"🌊 Close to sea: {close_to_sea}"
                                     )
 
                                 details_section = (
@@ -400,10 +415,12 @@ def main():
 
                         except Exception as err:
                             print(f"⚠️ Error processing post: {err}")
+                            print("Full traceback:")
+                            traceback.print_exc()
                             continue
 
                     print("☑️ Finished processing group")
-                    wait_with_countdown(random.randint(1, 2))
+                    wait_with_countdown(random.randint(3, 4))
 
                 wait_with_countdown(random.randint(3, 5))
                 print("🔄 Restarting group search...")
@@ -411,11 +428,12 @@ def main():
             msg = f"👮‍♂️You probably got blocked... cooling down for {cool_down_minutes} minutes."
             print(msg)
             notifier.notify(msg)
+            shouldRun = False
             browser.quit()
             sys.exit()
-            wait_with_countdown(cool_down_minutes)
-            cool_down_minutes += 20
-            blocked_retries = 0
+            # wait_with_countdown(cool_down_minutes)
+            # cool_down_minutes += 20
+            # blocked_retries = 0
         except Exception as err:
             import traceback
 
