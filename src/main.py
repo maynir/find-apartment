@@ -197,6 +197,7 @@ def main():
                         posted_by_url = None
                         link_to_post = None
                         text = None
+                        price_text = None
 
                         ActionChains(browser).move_to_element(post).perform()
 
@@ -277,7 +278,6 @@ def main():
                             try:
                                 if(post.find_elements(By.XPATH,".//span[@class='x193iq5w xeuugli x13faqbe x1vvkbs x1xmvt09 x6prxxf xvq8zen x1s688f xzsf02u']")):
                                     price_text = post.find_elements(By.XPATH,".//span[@class='x193iq5w xeuugli x13faqbe x1vvkbs x1xmvt09 x6prxxf xvq8zen x1s688f xzsf02u']")[1].text
-                                    text = f"{text}\nPrice: {price_text}".strip()
                                     print(f"💰 Found price post section: {price_text}")
                             except Exception as err:
                                 print(f"⚠️Could not find price post section")
@@ -299,7 +299,7 @@ def main():
 
                             # Check for duplicate posts before running expensive OpenAI analysis
                             if (
-                                text.strip() in seen_apartments
+                                text in seen_apartments
                                 or apartments_client.get_apartments_by_text(text)
                             ):
                                 print(
@@ -308,15 +308,16 @@ def main():
                                 print("__________________________")
                                 continue
 
-                            price, city, address, rooms, location_details = (
-                                analyze_apartment_details_with_openai(text)
+                            price, city, address, rooms, location_details, close_to_sea = (
+                                analyze_apartment_details_with_openai(f"{text}\nPrice: {price_text}")
                             )
 
                             print(f"🤖 OpenAI Analysis Results:")
                             print(f" 💰 Price: {price} ILS")
                             print(f" 🏙️ City: {city}")
-                            print(f" 📍 Address: {address}")
+                            print(f" 📍 Address: {address}, City: {city}")
                             print(f" 🚪 Rooms: {rooms}")
+                            print(f" 🌊 Close to sea: {close_to_sea}")
                             print(f" 🗺️ Location Details: {location_details}")
 
                             (
@@ -341,6 +342,7 @@ def main():
                                     "address": address,
                                     "rooms": rooms,
                                     "location_details": location_details,
+                                    "close_to_sea": close_to_sea,
                                     "is_within_budget": price
                                     and price <= config.BUDGET_THRESHOLD,
                                 }
@@ -358,7 +360,7 @@ def main():
                                 print("__________________________")
                                 continue
 
-                            print(f"✅ NEW MATCH FOUND: {good_match_word.group()}")
+                            print(f"✅ NEW MATCH FOUND")
 
                             try:
                                 apartment_details = []
@@ -373,6 +375,10 @@ def main():
                                 if location_details:
                                     apartment_details.append(
                                         f"📌 Location Details: {location_details}"
+                                    )
+                                if close_to_sea:
+                                    apartment_details.append(
+                                        f"🌊 Close to sea: {close_to_sea}"
                                     )
 
                                 details_section = (
@@ -409,6 +415,8 @@ def main():
 
                         except Exception as err:
                             print(f"⚠️ Error processing post: {err}")
+                            print("Full traceback:")
+                            traceback.print_exc()
                             continue
 
                     print("☑️ Finished processing group")

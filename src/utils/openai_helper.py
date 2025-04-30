@@ -69,7 +69,7 @@ def analyze_budget_with_openai(text):
 def analyze_apartment_details_with_openai(text):
     """
     Use OpenAI to analyze apartment post details.
-    Returns a tuple of (price, city, address, rooms, location_details)
+    Returns a tuple of (price, city, address, rooms, location_details, close_to_sea)
     """
     try:
         prompt = f"""
@@ -78,7 +78,8 @@ def analyze_apartment_details_with_openai(text):
         2. What is the city name?
         3. What is the location? Return ONLY the street name and number WITHOUT the word 'רחוב', or if not available, return the neighborhood name.
         4. What is the EXACT number of rooms?
-        5. Give a brief, one-line summary of key location details (nearby landmarks, transportation, or features)
+        5. Give a brief, one-line summary of key location details (nearby landmarks, transportation, or features).
+        6. Is the location close to the beach?
 
         Post text:
         {text}
@@ -89,7 +90,8 @@ def analyze_apartment_details_with_openai(text):
             "city": string or null,
             "address": string or null,
             "rooms": number or null,
-            "location_details": string or null
+            "location_details": string or null,
+            "close_to_sea": boolean or null
         }}
         """
 
@@ -115,9 +117,10 @@ def analyze_apartment_details_with_openai(text):
         address = parsed_result.get("address")
         rooms = parsed_result.get("rooms")
         location_details = parsed_result.get("location_details")
+        close_to_sea = parsed_result.get("close_to_sea")
 
-        return (price, city, address, rooms, location_details)
+        return (price, city, address, rooms, location_details, close_to_sea)
 
     except Exception as e:
         print(f"⚠️ Error analyzing apartment details with OpenAI: {e}")
-        return (None, None, None, None, None)
+        return (None, None, None, None, None, None)
