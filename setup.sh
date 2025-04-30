@@ -57,6 +57,10 @@ mongosh <<EOF
 use apartmentsdb
 db.createCollection("apartments")
 print("✅ MongoDB setup complete: Database 'apartmentsdb' and collection 'apartments' created.")
+
+use yad2db
+db.createCollection("apartments")
+print("✅ MongoDB setup complete: Database 'yad2db' and collection 'apartments' created.")
 EOF
 
 echo "🎉 Setup completed successfully!"

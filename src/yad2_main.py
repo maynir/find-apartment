@@ -202,7 +202,7 @@ def main():
             search(browser, notifier)
 
             while True:
-                # seen_yad2_posts = apartments_client.get_seen_apartments()
+                seen_yad2_posts = apartments_client.get_seen_apartments()
 
                 posts = browser.find_elements(By.XPATH, POST_LIST_ITEM_XPATH)
                 print(f"🖼️ Found {len(posts)} posts in Yad2")
@@ -223,7 +223,7 @@ def main():
 
                     # Scroll to the post and wait
                     # browser.execute_script("arguments[0].scrollIntoView(true);", post)
-                    human_delay(2, 4)
+                    human_delay(6, 10)
 
                     try:
                         try:
@@ -237,7 +237,12 @@ def main():
                             item_id = link_to_post.split("/item/")[1].split("?")[0]
                             print(f"📋 Item ID: {item_id}")
                         except Exception as e:
-                            print(f"⚠️ Error extracting item ID: {e}")
+                            print(f"❌ Error extracting item ID: {e}")
+                            continue
+
+                        if item_id in seen_yad2_posts:
+                            print(f"📋 Item ID already seen, skipping...")
+                            continue
 
                         browser.execute_script(
                             f"window.open('{link_to_post}', '_blank');"
@@ -305,6 +310,25 @@ def main():
                             print(f"📋 Contact number: {posted_by_number}")
                         except Exception as e:
                             print(f"⚠️ Error getting contact number: {e}")
+
+                        try:
+                            apartments_client.save_apartment(
+                                {
+                                    "item_id": item_id,
+                                    "main_title": main_title,
+                                    "secondary_title": secondary_title,
+                                    "rooms": rooms,
+                                    "floor": floor,
+                                    "area": area,
+                                    "price_text": price_text,
+                                    "description": text,
+                                    "contact_number": posted_by_number,
+                                    "link_to_post": link_to_post,
+                                }
+                            )
+                            print("💾 Apartment details saved to database")
+                        except Exception as e:
+                            print(f"⚠️ Error saving apartment to database: {e}")
 
                         message = (
                             f"Yad2\n"

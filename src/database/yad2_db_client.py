@@ -11,9 +11,6 @@ class Yad2DBClient:
 
     def get_seen_apartments(self):
         return {
-            apartment["text"].strip()
+            apartment["item_id"]
             for apartment in self.client.find_all(self.collection_name)
         }
-
-    def get_apartments_by_text(self, text):
-        return self.client.find_one(self.collection_name, {"text": text})
