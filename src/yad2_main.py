@@ -300,6 +300,12 @@ def main():
                             🔗 [View on Yad2]({link_to_post})
                             """
 
+                        try:
+                            notifier.notify(message)
+                        except Exception as e:
+                            print(f"❌ Error sending message: {e}")
+                        
+
                         # Close the tab and switch back to main window
                         browser.close()
                         browser.switch_to.window(browser.window_handles[0])
