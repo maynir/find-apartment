@@ -286,10 +286,10 @@ def main():
                             {secondary_title}
 
                             📊 *Details:*
-                            • {rooms}
-                            • {floor}
-                            • {area}
-                            • {price_text}
+                            • 🚪 {rooms}
+                            • 🏢 {floor}
+                            • 📏 {area}
+                            • 💰 {price_text}
 
                             📝 *Description:*
                             {text}
