@@ -168,8 +168,12 @@ def main():
                     
                     try:
                         # Get the link to the post
-                        link_element = post.find_element(By.XPATH, ".//a[@data-nagish='feed-item-layout-link']")
-                        link_to_post = link_element.get_attribute('href')
+                        try:
+                            link_element = post.find_element(By.XPATH, ".//a[@data-nagish='feed-item-layout-link']")
+                            link_to_post = link_element.get_attribute('href')
+                        except:
+                            print("❌ Could not find link to post, skipping...")
+                            continue
                         
                         # Right click and open in new tab
                         browser.execute_script(f"window.open('{link_to_post}', '_blank');")
