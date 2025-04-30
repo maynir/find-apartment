@@ -181,25 +181,48 @@ def main():
                         
                         # Switch to new tab
                         browser.switch_to.window(browser.window_handles[-1])
+                        try:
+                            main_title = browser.find_element(By.CSS_SELECTOR, ".ad-item-page-layout_mainContent__tyvpX h1").text.strip()
+                        except Exception as e:
+                            print(f"⚠️ Error getting main title: {e}")
 
-                        # Get the full text content
-                        main_title = browser.find_element(By.CSS_SELECTOR, ".ad-item-page-layout_mainContent__tyvpX h1").text.strip()
-                        secondary_title = browser.find_element(By.CSS_SELECTOR, ".ad-item-page-layout_mainContent__tyvpX h2").text.strip()
+                        try:
+                            secondary_title = browser.find_element(By.CSS_SELECTOR, ".ad-item-page-layout_mainContent__tyvpX h2").text.strip()
+                        except Exception as e:
+                            print(f"⚠️ Error getting secondary title: {e}")
 
-                        property_details = browser.find_elements(By.CSS_SELECTOR, ".ad-item-page-layout_mainContent__tyvpX .property-detail_buildingItemBox__ESM9C")
-                        rooms = property_details[0].text.strip()
-                        floor = property_details[1].text.strip()
-                        area = property_details[2].text.strip()
+                        try:
+                            property_details = browser.find_elements(By.CSS_SELECTOR, ".ad-item-page-layout_mainContent__tyvpX .property-detail_buildingItemBox__ESM9C")
+                            rooms = property_details[0].text.strip()
+                            floor = property_details[1].text.strip()
+                            area = property_details[2].text.strip()
+                        except Exception as e:
+                            print(f"⚠️ Error getting property details: {e}")
 
-                        text = browser.find_element(By.CSS_SELECTOR, ".ad-item-page-layout_mainContent__tyvpX .description_description__9t6rz").text.strip()
+                        try:
+                            text = browser.find_element(By.CSS_SELECTOR, ".ad-item-page-layout_mainContent__tyvpX .description_description__9t6rz").text.strip()
+                        except Exception as e:
+                            print(f"⚠️ Error getting description text: {e}")
 
-                        # Get the price
-                        price_text = browser.find_element(By.XPATH, "//span[@data-testid='price']").text.strip()
+                        try:
+                            price_text = browser.find_element(By.XPATH, "//span[@data-testid='price']").text.strip()
+                        except Exception as e:
+                            print(f"⚠️ Error getting price: {e}")
 
-                        # Get posted by info
-                        browser.find_element(By.XPATH, "//div[@class='rent-agency-contact-section_showAdContactsButtonBox__iB8kS']").click()
-                        human_delay(1, 3)
-                        posted_by_number = browser.find_element(By.XPATH, "//a[@class='phone-number-link_phoneNumberLink__7J2Q4']").text.strip()
+                        try:
+                            browser.find_element(By.XPATH, "//div[@class='rent-agency-contact-section_showAdContactsButtonBox__iB8kS']").click()
+                        except Exception as e:
+                            print(f"⚠️ Error clicking contact button: {e}")
+
+                        try:
+                            human_delay(1, 3)
+                        except Exception as e:
+                            print(f"⚠️ Error in human delay: {e}")
+
+                        try:
+                            posted_by_number = browser.find_element(By.XPATH, "//a[@class='phone-number-link_phoneNumberLink__7J2Q4']").text.strip()
+                        except Exception as e:
+                            print(f"⚠️ Error getting contact number: {e}")
 
                         # Close the tab and switch back to main window
                         browser.close()
