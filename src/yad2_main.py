@@ -220,9 +220,8 @@ def main():
                     area = None
                     posted_by_number = None
                     item_id = None
+                    imgs_src = []
 
-                    # Scroll to the post and wait
-                    # browser.execute_script("arguments[0].scrollIntoView(true);", post)
                     human_delay(6, 10)
 
                     try:
@@ -332,22 +331,31 @@ def main():
 
                         message = (
                             f"Yad2\n"
-                            f"🏠 *{main_title}*\n"
-                            f"{secondary_title}\n\n"
-                            f"📊 *Details:*\n"
-                            f"• 🚪 {rooms}\n"
-                            f"• 🏢 {floor}\n"
-                            f"• 📏 {area}\n"
-                            f"• 💰 {price_text}\n\n"
-                            f"📝 *Description:*\n"
+                            f"🏠 Main title: {main_title}\n"
+                            f"Secondary title: {secondary_title}\n\n"
+                            f"📊 Details:\n"
+                            f"• 🚪 Rooms: {rooms}\n"
+                            f"• 🏢 Floor: {floor}\n"
+                            f"• 📏 Area: {area}\n"
+                            f"• 💰 Price: {price_text}\n\n"
+                            f"📝 Description:\n"
                             f"{text}\n\n"
-                            f"📞 *Contact:*\n"
-                            f"{posted_by_number}\n\n"
+                            f"📞 Contact: {posted_by_number}\n\n"
                             f"🔗 [View on Yad2]({link_to_post})"
                         )
 
                         try:
-                            notifier.notify(message)
+                            imgs = post.find_elements(
+                                By.XPATH,
+                                ".//*[@class='gallery-grid_viewportDesktop___1Ke1 gallery-swiper_viewportMobile__Z2YeT']//img",
+                            )
+                            imgs_src = [img.get_attribute("src") for img in imgs]
+                            print(f"📷 Found {len(imgs_src)} post images ")
+                        except Exception as err:
+                            print(f"⚠️Could not find post images")
+
+                        try:
+                            notifier.notify(message, imgs_src)
                         except Exception as e:
                             print(f"❌ Error sending message: {e}")
 
