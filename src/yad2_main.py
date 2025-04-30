@@ -55,46 +55,80 @@ def search(browser, notifier):
         ActionChains(browser).send_keys(Keys.ESCAPE).perform()
 
         # Find email field and enter email
-        location_field = wait.until(EC.presence_of_element_located((By.XPATH, "//input[@placeholder='איזור, עיר שכונה או רחוב']")))
+        location_field = wait.until(
+            EC.presence_of_element_located(
+                (By.XPATH, "//input[@placeholder='איזור, עיר שכונה או רחוב']")
+            )
+        )
         location_field.click()
         human_delay(1, 3)
         location_field.send_keys("לב תל אביב, לב העיר צפון, תל אביב יפו")
-        location_item = wait.until(EC.presence_of_element_located((By.XPATH, "//b[contains(text(),'לב תל אביב, לב העיר צפון, תל אביב יפו')]")))
+        location_item = wait.until(
+            EC.presence_of_element_located(
+                (
+                    By.XPATH,
+                    "//b[contains(text(),'לב תל אביב, לב העיר צפון, תל אביב יפו')]",
+                )
+            )
+        )
         location_item.click()
         move_mouse_randomly()
 
         # Find price field and enter price
-        price_field = wait.until(EC.presence_of_element_located((By.XPATH, "//span[contains(text(), 'מחיר')]")))
+        price_field = wait.until(
+            EC.presence_of_element_located(
+                (By.XPATH, "//span[contains(text(), 'מחיר')]")
+            )
+        )
         price_field.click()
         human_delay(1, 3)
-        prices = wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".price-range-input_priceDropdownBox__YOOPn .inputs-slider-range_input__fZs4Z")))
+        prices = wait.until(
+            EC.presence_of_all_elements_located(
+                (
+                    By.CSS_SELECTOR,
+                    ".price-range-input_priceDropdownBox__YOOPn .inputs-slider-range_input__fZs4Z",
+                )
+            )
+        )
         low_price = prices[0]
         high_price = prices[1]
         low_price.send_keys(5000)
         high_price.send_keys(7500)
         move_mouse_randomly()
 
-
         # Find room number
-        room_field = wait.until(EC.presence_of_element_located((By.XPATH, "//span[contains(text(), 'חדרים')]")))
+        room_field = wait.until(
+            EC.presence_of_element_located(
+                (By.XPATH, "//span[contains(text(), 'חדרים')]")
+            )
+        )
         room_field.click()
         human_delay(1, 3)
-        rooms = wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".room-range-input_roomsDropdownBox__S6ymU .buttons-range_button__hNTr6")))
+        rooms = wait.until(
+            EC.presence_of_all_elements_located(
+                (
+                    By.CSS_SELECTOR,
+                    ".room-range-input_roomsDropdownBox__S6ymU .buttons-range_button__hNTr6",
+                )
+            )
+        )
         two_rooms = rooms[2]
         two_rooms.click()
         three_rooms = rooms[4]
         three_rooms.click()
         move_mouse_randomly()
 
-        search_button = wait.until(EC.presence_of_element_located((By.XPATH, "//button[@data-nagish='search-submit-button']")))
+        search_button = wait.until(
+            EC.presence_of_element_located(
+                (By.XPATH, "//button[@data-nagish='search-submit-button']")
+            )
+        )
         search_button.click()
 
         # Wait for home button (to confirm successful login)
         human_delay(5, 7)
 
         print("🔍 Search successful")
-
-        
 
     except Exception as e:
         print(f"❌ Search failed: {e}")
@@ -149,50 +183,68 @@ def main():
             while True:
                 # seen_yad2_posts = apartments_client.get_seen_apartments()
 
-                posts = browser.find_elements(By.XPATH, "//li[@data-nagish='feed-item-list-box']")
+                posts = browser.find_elements(
+                    By.XPATH, "//li[@data-nagish='feed-item-list-box']"
+                )
                 print(f"🖼️ Found {len(posts)} posts in Yad2")
                 print("__________________________")
                 time.sleep(random.randint(8, 10))
 
                 for post in posts:
-                    title = None
-                    posted_by = None
-                    posted_by_url = None
                     link_to_post = None
                     text = None
                     price_text = None
+                    main_title = None
+                    secondary_title = None
+                    rooms = None
+                    floor = None
+                    area = None
+                    posted_by_number = None
 
                     # Scroll to the post and wait
                     # browser.execute_script("arguments[0].scrollIntoView(true);", post)
                     human_delay(2, 4)
-                    
+
                     try:
                         # Get the link to the post
                         try:
-                            link_element = post.find_element(By.XPATH, ".//a[@data-nagish='feed-item-layout-link']")
-                            link_to_post = link_element.get_attribute('href')
+                            link_element = post.find_element(
+                                By.XPATH, ".//a[@data-nagish='feed-item-layout-link']"
+                            )
+                            link_to_post = link_element.get_attribute("href")
                         except:
                             print("❌ Could not find link to post, skipping...")
                             continue
-                        
+
                         # Right click and open in new tab
-                        browser.execute_script(f"window.open('{link_to_post}', '_blank');")
+                        browser.execute_script(
+                            f"window.open('{link_to_post}', '_blank');"
+                        )
                         time.sleep(random.randint(2, 3))
-                        
+
                         # Switch to new tab
                         browser.switch_to.window(browser.window_handles[-1])
                         try:
-                            main_title = browser.find_element(By.CSS_SELECTOR, ".ad-item-page-layout_mainContent__tyvpX h1").text.strip()
+                            main_title = browser.find_element(
+                                By.CSS_SELECTOR,
+                                ".ad-item-page-layout_mainContent__tyvpX h1",
+                            ).text.strip()
                         except Exception as e:
                             print(f"⚠️ Error getting main title: {e}")
 
                         try:
-                            secondary_title = browser.find_element(By.CSS_SELECTOR, ".ad-item-page-layout_mainContent__tyvpX h2").text.strip()
+                            secondary_title = browser.find_element(
+                                By.CSS_SELECTOR,
+                                ".ad-item-page-layout_mainContent__tyvpX h2",
+                            ).text.strip()
                         except Exception as e:
                             print(f"⚠️ Error getting secondary title: {e}")
 
                         try:
-                            property_details = browser.find_elements(By.CSS_SELECTOR, ".ad-item-page-layout_mainContent__tyvpX .property-detail_buildingItemBox__ESM9C")
+                            property_details = browser.find_elements(
+                                By.CSS_SELECTOR,
+                                ".ad-item-page-layout_mainContent__tyvpX .property-detail_buildingItemBox__ESM9C",
+                            )
                             rooms = property_details[0].text.strip()
                             floor = property_details[1].text.strip()
                             area = property_details[2].text.strip()
@@ -200,26 +252,58 @@ def main():
                             print(f"⚠️ Error getting property details: {e}")
 
                         try:
-                            text = browser.find_element(By.CSS_SELECTOR, ".ad-item-page-layout_mainContent__tyvpX .description_description__9t6rz").text.strip()
+                            text = browser.find_element(
+                                By.CSS_SELECTOR,
+                                ".ad-item-page-layout_mainContent__tyvpX .description_description__9t6rz",
+                            ).text.strip()
                         except Exception as e:
                             print(f"⚠️ Error getting description text: {e}")
 
                         try:
-                            price_text = browser.find_element(By.XPATH, "//span[@data-testid='price']").text.strip()
+                            price_text = browser.find_element(
+                                By.XPATH, "//span[@data-testid='price']"
+                            ).text.strip()
                         except Exception as e:
                             print(f"⚠️ Error getting price: {e}")
 
                         try:
-                            browser.find_element(By.XPATH, "//div[@class='rent-agency-contact-section_showAdContactsButtonBox__iB8kS']").click()
+                            browser.find_element(
+                                By.XPATH,
+                                "//div[@class='rent-agency-contact-section_showAdContactsButtonBox__iB8kS']",
+                            ).click()
                             human_delay(1, 3)
-                            posted_by_number = browser.find_element(By.XPATH, "//a[@class='phone-number-link_phoneNumberLink__7J2Q4']").text.strip()
+                            posted_by_number = browser.find_element(
+                                By.XPATH,
+                                "//a[@class='phone-number-link_phoneNumberLink__7J2Q4']",
+                            ).text.strip()
                         except Exception as e:
                             print(f"⚠️ Error getting contact number: {e}")
+
+                        # Build telegram message
+                        message = f"""
+                            Yad2
+                            🏠 *{main_title}*
+                            {secondary_title}
+
+                            📊 *Details:*
+                            • {rooms}
+                            • {floor}
+                            • {area}
+                            • {price_text}
+
+                            📝 *Description:*
+                            {text}
+
+                            📞 *Contact:*
+                            {posted_by_number}
+
+                            🔗 [View on Yad2]({link_to_post})
+                            """
 
                         # Close the tab and switch back to main window
                         browser.close()
                         browser.switch_to.window(browser.window_handles[0])
-                        
+
                     except Exception as e:
                         print(f"❌ Error opening post in new tab: {e}")
                         continue
