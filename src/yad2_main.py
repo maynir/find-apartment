@@ -211,15 +211,7 @@ def main():
 
                         try:
                             browser.find_element(By.XPATH, "//div[@class='rent-agency-contact-section_showAdContactsButtonBox__iB8kS']").click()
-                        except Exception as e:
-                            print(f"⚠️ Error clicking contact button: {e}")
-
-                        try:
                             human_delay(1, 3)
-                        except Exception as e:
-                            print(f"⚠️ Error in human delay: {e}")
-
-                        try:
                             posted_by_number = browser.find_element(By.XPATH, "//a[@class='phone-number-link_phoneNumberLink__7J2Q4']").text.strip()
                         except Exception as e:
                             print(f"⚠️ Error getting contact number: {e}")
