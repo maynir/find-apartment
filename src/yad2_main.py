@@ -249,7 +249,6 @@ def main():
                 for post in posts:
                     text = None
                     price_text = None
-                    main_title = None
                     secondary_title = None
                     rooms = None
                     floor = None
@@ -258,12 +257,13 @@ def main():
                     imgs_src = []
                     map_image = None
 
-                    time.sleep(random.randint(2, 4))
+                    time.sleep(random.randint(3, 6))
 
                     try:
                         try:
                             link_element = post.find_element(By.XPATH, POST_LINK_XPATH)
                             link_to_post = link_element.get_attribute("href")
+                            print(f"🔗 Link to post: {link_to_post}")
                         except:
                             print("❌ Could not find link to post, skipping...")
                             continue
@@ -277,6 +277,7 @@ def main():
 
                         if item_id in seen_yad2_posts:
                             print(f"🥱 Item ID already seen, skipping...")
+                            print("__________________________")
                             continue
 
                         browser.execute_script(
@@ -290,9 +291,10 @@ def main():
                                 By.CSS_SELECTOR,
                                 MAIN_TITLE_CSS,
                             ).text.strip()
-                            print(f"📋 Main title: {main_title}")
+                            print(f"🏠 Main title: {main_title}")
                         except Exception as e:
                             print(f"⚠️ Error getting main title")
+                            time.sleep(random.randint(6, 7))
                             continue
 
                         try:
@@ -300,7 +302,7 @@ def main():
                                 By.CSS_SELECTOR,
                                 SECONDARY_TITLE_CSS,
                             ).text.strip()
-                            print(f"📋 Secondary title: {secondary_title}")
+                            print(f"🏢 Secondary title: {secondary_title}")
                         except Exception as e:
                             print(f"⚠️ Error getting secondary title: {e}")
 
@@ -312,7 +314,7 @@ def main():
                             rooms = property_details[0].text.strip()
                             floor = property_details[1].text.strip()
                             area = property_details[2].text.strip()
-                            print(f"📋 Rooms: {rooms}, Floor: {floor}, Area: {area}")
+                            print(f"🚪 Rooms: {rooms}, 📍 Floor: {floor}, 📏 Area: {area}")
                         except Exception as e:
                             print(f"⚠️ Error getting property details: {e}")
 
@@ -321,17 +323,20 @@ def main():
                                 By.CSS_SELECTOR,
                                 DESCRIPTION_CSS,
                             ).text.strip()
-                            print(f"📋 Description: {text}")
+                            print(f"📝 Description: {text}")
                         except Exception as e:
-                            print(f"⚠️ Error getting description text: {e}")
+                            print(f"⚠️ Error getting description text")
 
                         try:
-                            price_text = browser.find_element(
+                            price_element = browser.find_element(
                                 By.XPATH, PRICE_TEXT_XPATH
-                            ).text
-                            print(f"📋 Price: {price_text}")
+                            )
+                            price_text = price_element.text.strip()
+                            if not price_text:
+                                price_text = price_element.get_attribute('textContent').strip()
+                            print(f"💰 Price: {price_text}")
                         except Exception as e:
-                            print(f"⚠️ Error getting price: {e}")
+                            print(f"⚠️ Error getting price")
 
                         try:
                             browser.find_element(
@@ -343,7 +348,7 @@ def main():
                                 By.XPATH,
                                 PHONE_NUMBER_LINK_XPATH,
                             ).text.strip()
-                            print(f"📋 Contact number: {posted_by_number}")
+                            print(f"📞 Contact number: {posted_by_number}")
                         except Exception as e:
                             print(f"⚠️ Error getting contact number")
 
@@ -385,7 +390,7 @@ def main():
                             imgs = browser.find_elements(
                                 By.CSS_SELECTOR,
                                 ".gallery-grid_foucsableItem__3H8__ img",
-                            )
+                            )[:9]
                             imgs_src = [img.get_attribute("src") for img in imgs]
                             print(f"📷 Found {len(imgs_src)} post images ")
                         except Exception as err:
