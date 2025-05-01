@@ -36,7 +36,7 @@ ROOM_RANGE_BUTTON_CSS = (
     ".room-range-input_roomsDropdownBox__S6ymU .buttons-range_button__hNTr6"
 )
 SEARCH_SUBMIT_BUTTON_XPATH = "//button[@data-nagish='search-submit-button']"
-POST_LIST_ITEM_XPATH = "//li[@data-nagish='feed-item-list-box']"
+POST_LIST_ITEM_XPATH = "//li[@data-nagish='feed-item-list-box'][not(@data-testid='dfp-slot')][not(@data-testid='yad1-listing-basic')]"
 POST_LINK_XPATH = ".//a[@data-nagish='feed-item-layout-link']"  # Relative XPath
 MAIN_TITLE_CSS = ".ad-item-page-layout_mainContent__tyvpX h1"
 SECONDARY_TITLE_CSS = ".ad-item-page-layout_mainContent__tyvpX h2"
@@ -281,8 +281,6 @@ def main():
                     imgs_src = []
                     map_image = None
 
-                    time.sleep(random.randint(3, 6))
-
                     try:
                         try:
                             link_element = post.find_element(By.XPATH, POST_LINK_XPATH)
@@ -434,6 +432,8 @@ def main():
 
                         browser.close()
                         browser.switch_to.window(browser.window_handles[0])
+
+                        time.sleep(random.randint(3, 6))
 
                     except Exception as e:
                         print(f"❌ Error opening post in new tab: {e}")
