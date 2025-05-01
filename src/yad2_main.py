@@ -294,6 +294,8 @@ def main():
                             print(f"🏠 Main title: {main_title}")
                         except Exception as e:
                             print(f"⚠️ Error getting main title")
+                            browser.close()
+                            browser.switch_to.window(browser.window_handles[0])
                             time.sleep(random.randint(6, 7))
                             continue
 
