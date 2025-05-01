@@ -134,6 +134,8 @@ single_apartment_bad_words = [
     "בדרך השלום",
     "מעונות ברושים",
     "במעונות ברושים",
+    "נווה אביבית",
+    "בנווה אביבית",
 ]
 sharable_apartment_bad_words = [
     "סורי בנות",

@@ -82,6 +82,29 @@ def search(browser, notifier):
         human_delay(10, 10)
         ActionChains(browser).send_keys(Keys.ESCAPE).perform()
 
+        # # Find level number
+        # extra_fields_field = wait.until(
+        #     EC.presence_of_element_located((By.CSS_SELECTOR, ".extra-filters_extraFiltersBox__df4eE"))
+        # )
+        # extra_fields_field.click()
+        # human_delay(1, 3)
+        
+        # level_fields = wait.until(
+        #     EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".floor-range-input_selectRangeBox__nlfaR .base-select_select__BYmkn"))
+        # )
+        # low_level = level_fields[0]
+        # ActionChains(browser).move_to_element(low_level).perform()
+        # low_level.click()
+        # human_delay(1, 3)
+        # all_levels = low_level.find_elements(By.TAG_NAME, "li")
+        # ActionChains(low_level).send_keys(Keys.ARROW_DOWN).perform()
+        # human_delay(1, 3)
+        # ActionChains(low_level).send_keys(Keys.ARROW_DOWN).perform()
+        # human_delay(1, 3)
+        # ActionChains(low_level).send_keys(Keys.ARROW_DOWN).perform()
+        # human_delay(1, 3)
+        # ActionChains(low_level).send_keys(Keys.ENTER).perform()
+
         # Find email field and enter email
         location_field = wait.until(
             EC.presence_of_element_located((By.XPATH, LOCATION_INPUT_XPATH))
@@ -232,18 +255,19 @@ def main():
                 service=webdriver.ChromeService(ChromeDriverManager().install()),
                 options=option,
             )
+            browser.get("http://www.yad2.co.il/realestate/rent")
+            browser.maximize_window()
+
+            search(browser, notifier)
 
             while True:
-                browser.get("http://www.yad2.co.il/realestate/rent")
-                browser.maximize_window()
-
-                search(browser, notifier)
-
                 seen_yad2_posts = apartments_client.get_seen_apartments()
 
                 posts = browser.find_elements(By.XPATH, POST_LIST_ITEM_XPATH)
+                
                 print(f"🖼️ Found {len(posts)} posts in Yad2")
                 print("__________________________")
+                
                 time.sleep(random.randint(8, 10))
 
                 for post in posts:
@@ -416,6 +440,7 @@ def main():
                         continue
 
                 wait_with_countdown(random.randint(5, 10))
+                browser.refresh()
                 print("🔄 Restarting search...")
         except GettingBlockedError as err:
             msg = f"👮‍♂️You probably got blocked... cooling down for {cool_down_minutes} minutes."
