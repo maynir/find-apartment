@@ -3,6 +3,7 @@ import re
 import sys
 import time
 import pymongo
+import traceback
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -123,11 +124,12 @@ def main():
     shouldRun = True
 
     while shouldRun:
+        browser = webdriver.Chrome(
+            service=webdriver.ChromeService(ChromeDriverManager().install()),
+            options=option,
+        )
         try:
-            browser = webdriver.Chrome(
-                service=webdriver.ChromeService(ChromeDriverManager().install()),
-                options=option,
-            )
+
             browser.get("http://facebook.com")
             browser.maximize_window()
 
@@ -450,8 +452,6 @@ def main():
             # cool_down_minutes += 20
             # blocked_retries = 0
         except Exception as err:
-            import traceback
-
             print(f"❌ Error: {err}")
             print("Full traceback:")
             traceback.print_exc()

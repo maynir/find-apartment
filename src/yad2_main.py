@@ -27,7 +27,6 @@ from utils.text_processing import (
 
 # --- Selectors and XPaths ---
 LOCATION_INPUT_XPATH = "//input[@placeholder='איזור, עיר שכונה או רחוב']"
-LOCATION_ITEM_XPATH = "//b[contains(text(),'לב תל אביב, לב העיר צפון, תל אביב יפו')]"
 PRICE_FIELD_XPATH = "//span[contains(text(), 'מחיר')]"
 PRICE_RANGE_INPUT_CSS = (
     ".price-range-input_priceDropdownBox__YOOPn .inputs-slider-range_input__fZs4Z"
@@ -94,7 +93,43 @@ def search(browser, notifier):
             EC.presence_of_element_located(
                 (
                     By.XPATH,
-                    LOCATION_ITEM_XPATH,
+                    "//b[contains(text(),'לב תל אביב, לב העיר צפון, תל אביב יפו')]",
+                )
+            )
+        )
+        location_item.click()
+        move_mouse_randomly()
+
+        location_field.send_keys("הצפון הישן - דרום, תל אביב יפו")
+        location_item = wait.until(
+            EC.presence_of_element_located(
+                (
+                    By.XPATH,
+                    "//b[contains(text(),'הצפון הישן - דרום, תל אביב יפו')]",
+                )
+            )
+        )
+        location_item.click()
+        move_mouse_randomly()
+
+        location_field.send_keys("הצפון הישן - צפון, תל אביב יפו")
+        location_item = wait.until(
+            EC.presence_of_element_located(
+                (
+                    By.XPATH,
+                    "//b[contains(text(),'הצפון הישן - צפון, תל אביב יפו')]",
+                )
+            )
+        )
+        location_item.click()
+        move_mouse_randomly()
+
+        location_field.send_keys("כרם התימנים, תל אביב יפו")
+        location_item = wait.until(
+            EC.presence_of_element_located(
+                (
+                    By.XPATH,
+                    "//b[contains(text(),'כרם התימנים, תל אביב יפו')]",
                 )
             )
         )
@@ -176,6 +211,7 @@ option.add_argument("--disable-infobars")
 option.add_argument("start-maximized")
 option.add_argument("--disable-extensions")
 option.add_argument("--disable-notifications")
+# option.add_argument("--headless")
 option.add_argument(
     "--disable-blink-features=AutomationControlled"
 )  # Prevent detection
@@ -196,12 +232,13 @@ def main():
                 service=webdriver.ChromeService(ChromeDriverManager().install()),
                 options=option,
             )
-            browser.get("http://www.yad2.co.il/realestate/rent")
-            browser.maximize_window()
-
-            search(browser, notifier)
 
             while True:
+                browser.get("http://www.yad2.co.il/realestate/rent")
+                browser.maximize_window()
+
+                search(browser, notifier)
+
                 seen_yad2_posts = apartments_client.get_seen_apartments()
 
                 posts = browser.find_elements(By.XPATH, POST_LIST_ITEM_XPATH)
@@ -210,7 +247,6 @@ def main():
                 time.sleep(random.randint(8, 10))
 
                 for post in posts:
-                    link_to_post = None
                     text = None
                     price_text = None
                     main_title = None
@@ -219,10 +255,10 @@ def main():
                     floor = None
                     area = None
                     posted_by_number = None
-                    item_id = None
                     imgs_src = []
+                    map_image = None
 
-                    human_delay(6, 10)
+                    time.sleep(random.randint(2, 4))
 
                     try:
                         try:
@@ -240,7 +276,7 @@ def main():
                             continue
 
                         if item_id in seen_yad2_posts:
-                            print(f"📋 Item ID already seen, skipping...")
+                            print(f"🥱 Item ID already seen, skipping...")
                             continue
 
                         browser.execute_script(
@@ -256,7 +292,8 @@ def main():
                             ).text.strip()
                             print(f"📋 Main title: {main_title}")
                         except Exception as e:
-                            print(f"⚠️ Error getting main title: {e}")
+                            print(f"⚠️ Error getting main title")
+                            continue
 
                         try:
                             secondary_title = browser.find_element(
@@ -291,7 +328,7 @@ def main():
                         try:
                             price_text = browser.find_element(
                                 By.XPATH, PRICE_TEXT_XPATH
-                            ).text.strip()
+                            ).text
                             print(f"📋 Price: {price_text}")
                         except Exception as e:
                             print(f"⚠️ Error getting price: {e}")
@@ -308,7 +345,7 @@ def main():
                             ).text.strip()
                             print(f"📋 Contact number: {posted_by_number}")
                         except Exception as e:
-                            print(f"⚠️ Error getting contact number: {e}")
+                            print(f"⚠️ Error getting contact number")
 
                         try:
                             apartments_client.save_apartment(
@@ -345,19 +382,24 @@ def main():
                         )
 
                         try:
-                            imgs = post.find_elements(
-                                By.XPATH,
-                                ".//*[@class='gallery-grid_viewportDesktop___1Ke1 gallery-swiper_viewportMobile__Z2YeT']//img",
+                            imgs = browser.find_elements(
+                                By.CSS_SELECTOR,
+                                ".gallery-grid_foucsableItem__3H8__ img",
                             )
                             imgs_src = [img.get_attribute("src") for img in imgs]
                             print(f"📷 Found {len(imgs_src)} post images ")
                         except Exception as err:
                             print(f"⚠️Could not find post images")
 
+                        if main_title:
+                            map_image = generate_map_image(main_title, "תל אביב")
+
                         try:
-                            notifier.notify(message, imgs_src)
+                            notifier.notify(message, imgs_src, map_image)
                         except Exception as e:
                             print(f"❌ Error sending message: {e}")
+
+                        print("__________________________")
 
                         browser.close()
                         browser.switch_to.window(browser.window_handles[0])
