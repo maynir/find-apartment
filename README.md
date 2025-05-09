@@ -67,7 +67,7 @@ If you need to manually manage MongoDB:
 To use my project, follow these steps:
 
 ```sh
-python3 src/main.py
+python3 src/facebook_main.py
 ```
 
 Install dependencies

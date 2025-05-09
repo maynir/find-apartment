@@ -3,6 +3,7 @@ import re
 import sys
 import time
 import pymongo
+import traceback
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -123,11 +124,12 @@ def main():
     shouldRun = True
 
     while shouldRun:
+        browser = webdriver.Chrome(
+            service=webdriver.ChromeService(ChromeDriverManager().install()),
+            options=option,
+        )
         try:
-            browser = webdriver.Chrome(
-                service=webdriver.ChromeService(ChromeDriverManager().install()),
-                options=option,
-            )
+
             browser.get("http://facebook.com")
             browser.maximize_window()
 
@@ -167,7 +169,9 @@ def main():
                     if len(posts) in (0, 1):
                         blocked_retries += 1
                         ActionChains(browser).send_keys(Keys.ESCAPE).perform()
-                        print(f"🔄 Found {len(posts)} posts, clicking escape to close the modal")
+                        print(
+                            f"🔄 Found {len(posts)} posts, clicking escape to close the modal"
+                        )
                         posts = browser.find_elements(
                             By.XPATH, f"//*[@class='{posts_class}']"
                         )
@@ -276,8 +280,14 @@ def main():
                                 continue
 
                             try:
-                                if(post.find_elements(By.XPATH,".//span[@class='x193iq5w xeuugli x13faqbe x1vvkbs x1xmvt09 x6prxxf xvq8zen x1s688f xzsf02u']")):
-                                    price_text = post.find_elements(By.XPATH,".//span[@class='x193iq5w xeuugli x13faqbe x1vvkbs x1xmvt09 x6prxxf xvq8zen x1s688f xzsf02u']")[1].text
+                                if post.find_elements(
+                                    By.XPATH,
+                                    ".//span[@class='x193iq5w xeuugli x13faqbe x1vvkbs x1xmvt09 x6prxxf xvq8zen x1s688f xzsf02u']",
+                                ):
+                                    price_text = post.find_elements(
+                                        By.XPATH,
+                                        ".//span[@class='x193iq5w xeuugli x13faqbe x1vvkbs x1xmvt09 x6prxxf xvq8zen x1s688f xzsf02u']",
+                                    )[1].text
                                     print(f"💰 Found price post section: {price_text}")
                             except Exception as err:
                                 print(f"⚠️Could not find price post section")
@@ -308,8 +318,15 @@ def main():
                                 print("__________________________")
                                 continue
 
-                            price, city, address, rooms, location_details, close_to_sea = (
-                                analyze_apartment_details_with_openai(f"{text}\nPrice: {price_text}")
+                            (
+                                price,
+                                city,
+                                address,
+                                rooms,
+                                location_details,
+                                close_to_sea,
+                            ) = analyze_apartment_details_with_openai(
+                                f"{text}\nPrice: {price_text}"
                             )
 
                             print(f"🤖 OpenAI Analysis Results:")
@@ -435,8 +452,6 @@ def main():
             # cool_down_minutes += 20
             # blocked_retries = 0
         except Exception as err:
-            import traceback
-
             print(f"❌ Error: {err}")
             print("Full traceback:")
             traceback.print_exc()

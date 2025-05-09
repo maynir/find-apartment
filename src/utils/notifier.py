@@ -36,10 +36,16 @@ class Notifier:
     def get_images(self, image_urls):
         media_group = []
         for url in image_urls:
-            response = requests.get(url)
+            try:
+                response = requests.get(url, timeout=10)
+            except requests.exceptions.RequestException as e:
+                print(f"⚠️ Failed to download image {url}")
+                continue
             if response.status_code == 200:
                 image_data = BytesIO(response.content)  # Store image in memory
                 media_group.append(InputMediaPhoto(image_data))
+            else:
+                print(f"⚠️ Failed to download image {url}: Status code {response.status_code}")
         return media_group
 
     def play_sound(self):
