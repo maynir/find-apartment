@@ -1,5 +1,6 @@
 import random
 import re
+import traceback
 import sys
 import time
 import pymongo
@@ -77,9 +78,9 @@ def scroll_down(browser):
 
 def search(browser, notifier):
     try:
-        wait = WebDriverWait(browser, 15)
+        wait = WebDriverWait(browser, 30)
 
-        human_delay(10, 10)
+        human_delay(20, 20)
         ActionChains(browser).send_keys(Keys.ESCAPE).perform()
 
         # # Find level number
@@ -111,53 +112,28 @@ def search(browser, notifier):
         )
         location_field.click()
         human_delay(1, 3)
-        location_field.send_keys("לב תל אביב, לב העיר צפון, תל אביב יפו")
-        location_item = wait.until(
-            EC.presence_of_element_located(
-                (
-                    By.XPATH,
-                    "//b[contains(text(),'לב תל אביב, לב העיר צפון, תל אביב יפו')]",
-                )
-            )
-        )
-        location_item.click()
-        move_mouse_randomly()
+        
+        locations = [
+            "לב תל אביב, לב העיר צפון, תל אביב יפו",
+            "הצפון הישן - דרום, תל אביב יפו",
+            "הצפון הישן - צפון, תל אביב יפו",
+            "כרם התימנים, תל אביב יפו",
+            "נווה צדק, תל אביב יפו",
+            "פלורנטין, תל אביב יפו",
+        ]
 
-        location_field.send_keys("הצפון הישן - דרום, תל אביב יפו")
-        location_item = wait.until(
-            EC.presence_of_element_located(
-                (
-                    By.XPATH,
-                    "//b[contains(text(),'הצפון הישן - דרום, תל אביב יפו')]",
+        for loc in random.sample(locations, 5):
+            location_field.send_keys(loc)
+            location_item = wait.until(
+                EC.presence_of_element_located(
+                    (
+                        By.XPATH,
+                        f'//b[contains(text(),"{loc}")]',
+                    )
                 )
             )
-        )
-        location_item.click()
-        move_mouse_randomly()
-
-        location_field.send_keys("הצפון הישן - צפון, תל אביב יפו")
-        location_item = wait.until(
-            EC.presence_of_element_located(
-                (
-                    By.XPATH,
-                    "//b[contains(text(),'הצפון הישן - צפון, תל אביב יפו')]",
-                )
-            )
-        )
-        location_item.click()
-        move_mouse_randomly()
-
-        location_field.send_keys("כרם התימנים, תל אביב יפו")
-        location_item = wait.until(
-            EC.presence_of_element_located(
-                (
-                    By.XPATH,
-                    "//b[contains(text(),'כרם התימנים, תל אביב יפו')]",
-                )
-            )
-        )
-        location_item.click()
-        move_mouse_randomly()
+            location_item.click()
+            move_mouse_randomly()
 
         # Find price field and enter price
         price_field = wait.until(
@@ -211,6 +187,7 @@ def search(browser, notifier):
 
     except Exception as e:
         print(f"❌ Search failed: {e}")
+        traceback.print_exc()
         browser.quit()
         exit(1)
 
@@ -251,16 +228,16 @@ def main():
 
     while shouldRun:
         try:
-            browser = webdriver.Chrome(
-                service=webdriver.ChromeService(ChromeDriverManager().install()),
-                options=option,
-            )
-            browser.get("http://www.yad2.co.il/realestate/rent")
-            browser.maximize_window()
-
-            search(browser, notifier)
-
             while True:
+                browser = webdriver.Chrome(
+                    service=webdriver.ChromeService(ChromeDriverManager().install()),
+                    options=option,
+                )
+                browser.get("http://www.yad2.co.il/realestate/rent")
+                browser.maximize_window()
+
+                search(browser, notifier)
+
                 seen_yad2_posts = apartments_client.get_seen_apartments()
 
                 posts = browser.find_elements(By.XPATH, POST_LIST_ITEM_XPATH)
@@ -440,18 +417,9 @@ def main():
                         continue
 
                 wait_with_countdown(random.randint(5, 10))
-                browser.refresh()
+                browser.quit()
                 print("🔄 Restarting search...")
-        except GettingBlockedError as err:
-            msg = f"👮‍♂️You probably got blocked... cooling down for {cool_down_minutes} minutes."
-            print(msg)
-            notifier.notify(msg)
-            shouldRun = False
-            browser.quit()
-            sys.exit()
         except Exception as err:
-            import traceback
-
             print(f"❌ Error: {err}")
             print("Full traceback:")
             traceback.print_exc()
