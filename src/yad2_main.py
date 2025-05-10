@@ -3,6 +3,7 @@ import re
 import traceback
 import sys
 import time
+import datetime
 import pymongo
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -257,6 +258,7 @@ def main():
                     posted_by_number = None
                     imgs_src = []
                     map_image = None
+                    post_date = None
 
                     try:
                         try:
@@ -354,6 +356,20 @@ def main():
                             print(f"⚠️ Error getting contact number")
 
                         try:
+                            date_element = browser.find_element(
+                                By.CSS_SELECTOR,
+                                ".report-ad_createdAt__tqSM6"
+                            )
+                            date_text = date_element.text.strip()
+                            date_match = re.search(r'(\d{2}/\d{2}/\d{2})', date_text)
+                            if date_match:
+                                post_date = date_match.group(1)
+                                post_date = datetime.datetime.strptime(post_date, '%d/%m/%y')
+                                print(f"📅 Post date: {post_date.strftime('%d/%m/%Y')}")
+                        except Exception as e:
+                            print(f"⚠️ Error getting post date: {e}")
+
+                        try:
                             apartments_client.save_apartment(
                                 {
                                     "item_id": item_id,
@@ -366,12 +382,22 @@ def main():
                                     "description": text,
                                     "contact_number": posted_by_number,
                                     "link_to_post": link_to_post,
+                                    "post_date": post_date,
                                 }
                             )
                             print("💾 Apartment details saved to database")
                         except Exception as e:
                             print(f"⚠️ Error saving apartment to database: {e}")
 
+                        if post_date:
+                            current_date = datetime.datetime.now()
+                            if (current_date - post_date).days > 60:
+                                print(f"📅 Post is too old ({post_date.strftime('%d/%m/%Y')}), skipping...")
+                                browser.close()
+                                browser.switch_to.window(browser.window_handles[0])
+                                time.sleep(random.randint(6, 7))
+                                continue
+                        
                         message = (
                             f"Yad2\n"
                             f"🏠 Main title: {main_title}\n"
@@ -380,7 +406,8 @@ def main():
                             f"• 🚪 Rooms: {rooms}\n"
                             f"• 🏢 Floor: {floor}\n"
                             f"• 📏 Area: {area}\n"
-                            f"• 💰 Price: {price_text}\n\n"
+                            f"• 💰 Price: {price_text}\n"
+                            f"• 📅 Posted: {post_date.strftime('%d/%m/%Y') if post_date else 'N/A'}\n\n"
                             f"📝 Description:\n"
                             f"{text}\n\n"
                             f"📞 Contact: {posted_by_number}\n\n"
