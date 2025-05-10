@@ -181,7 +181,6 @@ def search(browser, notifier):
         )
         search_button.click()
 
-        # Wait for home button (to confirm successful login)
         human_delay(5, 7)
 
         print("🔍 Search successful")
@@ -239,10 +238,14 @@ def main():
 
                 search(browser, notifier)
 
+                move_mouse_randomly()
+
                 seen_yad2_posts = apartments_client.get_seen_apartments()
 
                 posts = browser.find_elements(By.XPATH, POST_LIST_ITEM_XPATH)
-                
+
+                move_mouse_randomly()
+
                 print(f"🖼️ Found {len(posts)} posts in Yad2")
                 print("__________________________")
                 
