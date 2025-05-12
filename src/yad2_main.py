@@ -392,14 +392,14 @@ def main():
                         except Exception as e:
                             print(f"⚠️ Error saving apartment to database: {e}")
 
-                        if post_date:
-                            current_date = datetime.datetime.now()
-                            if (current_date - post_date).days > 60:
-                                print(f"📅 Post is too old ({post_date.strftime('%d/%m/%Y')}), skipping...")
-                                browser.close()
-                                browser.switch_to.window(browser.window_handles[0])
-                                time.sleep(random.randint(6, 7))
-                                continue
+                        # if post_date:
+                        #     current_date = datetime.datetime.now()
+                        #     if (current_date - post_date).days > 60:
+                        #         print(f"📅 Post is too old ({post_date.strftime('%d/%m/%Y')}), skipping...")
+                        #         browser.close()
+                        #         browser.switch_to.window(browser.window_handles[0])
+                        #         time.sleep(random.randint(6, 7))
+                        #         continue
                         
                         message = (
                             f"Yad2\n"
