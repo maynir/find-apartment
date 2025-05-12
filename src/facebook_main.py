@@ -354,6 +354,8 @@ def main():
                                     "group_url": group_url,
                                     "is_good_match_word": is_good_match_word,
                                     "is_bad_match_word": is_bad_match_word,
+                                    "good_match_word": good_match_word,
+                                    "bad_match_word": bad_match_word,
                                     "price": price,
                                     "city": city,
                                     "address": address,

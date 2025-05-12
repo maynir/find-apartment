@@ -160,8 +160,8 @@ def validate_match(text, price=None, city=None, rooms=None):
     Validates if an apartment posting is a good match based on both regex and OpenAI extracted data.
     Returns a tuple of (is_good_match, is_bad_match, good_match_word, bad_match_word)
     """
-    good_match_word = good_words_regex.search(text)
-    bad_match_word = bad_words_regex.search(text)
+    good_match_word = good_words_regex.search(text).group() if good_words_regex.search(text) else ""
+    bad_match_word = bad_words_regex.search(text).group() if bad_words_regex.search(text) else ""
 
     # Initial check based on regex
     is_good_match_word = bool(good_match_word)
@@ -171,17 +171,20 @@ def validate_match(text, price=None, city=None, rooms=None):
     # if any(x is not None for x in [price, city, rooms]):
     # Bad match conditions based on OpenAI data
     if city and not re.search(r"תל אביב", city.strip()):
+        bad_match_word = "לא תל אביב"
         is_bad_match_word = True
 
     # Good match conditions based on OpenAI data
     if rooms is not None:
         if 1 <= rooms <= 3:  # Consider studios and up to 2.5 rooms as good matches
+            good_match_word = "גודל דירה טוב"
             is_good_match_word = True
         else:  # 3 or more rooms usually indicates shared apartments
+            bad_match_word = "גודל דירה לא טוב"
             is_bad_match_word = True
 
     return is_good_match_word, is_bad_match_word, good_match_word, bad_match_word
 
 
 def match_info(bad_match_word, good_match_word):
-    return f"bad_match_word:{bad_match_word.group() if bad_match_word else 'None'}, good_match_word:{good_match_word.group() if good_match_word else 'None'}"
+    return f"bad_match_word:{bad_match_word}, good_match_word:{good_match_word}"
