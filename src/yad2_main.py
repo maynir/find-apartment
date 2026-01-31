@@ -116,14 +116,14 @@ def search(browser, notifier):
         
         locations = [
             "לב תל אביב, לב העיר צפון, תל אביב יפו",
-            "הצפון הישן - דרום, תל אביב יפו",
-            "הצפון הישן - צפון, תל אביב יפו",
+            # "הצפון הישן - דרום, תל אביב יפו",
+            # "הצפון הישן - צפון, תל אביב יפו",
             "כרם התימנים, תל אביב יפו",
             "נווה צדק, תל אביב יפו",
-            "פלורנטין, תל אביב יפו",
+            # "פלורנטין, תל אביב יפו",
         ]
 
-        for loc in random.sample(locations, 5):
+        for loc in random.sample(locations, min(5, len(locations))):
             location_field.send_keys(loc)
             location_item = wait.until(
                 EC.presence_of_element_located(
@@ -152,8 +152,8 @@ def search(browser, notifier):
         )
         low_price = prices[0]
         high_price = prices[1]
-        low_price.send_keys(5000)
-        high_price.send_keys(7500)
+        low_price.send_keys(config.MIN_PRICE)
+        high_price.send_keys(config.BUDGET_THRESHOLD)
         move_mouse_randomly()
 
         # Find room number
@@ -171,9 +171,13 @@ def search(browser, notifier):
             )
         )
         two_rooms = rooms[2]
-        two_rooms.click()
+        two_half_rooms = rooms[3]
+        two_half_rooms.click()
+        # two_rooms.click()
         three_rooms = rooms[4]
-        three_rooms.click()
+        # three_rooms.click()
+        three_half_rooms = rooms[5]
+        three_half_rooms.click()
         move_mouse_randomly()
 
         search_button = wait.until(
@@ -372,26 +376,6 @@ def main():
                         except Exception as e:
                             print(f"⚠️ Error getting post date: {e}")
 
-                        try:
-                            apartments_client.save_apartment(
-                                {
-                                    "item_id": item_id,
-                                    "main_title": main_title,
-                                    "secondary_title": secondary_title,
-                                    "rooms": rooms,
-                                    "floor": floor,
-                                    "area": area,
-                                    "price_text": price_text,
-                                    "description": text,
-                                    "contact_number": posted_by_number,
-                                    "link_to_post": link_to_post,
-                                    "post_date": post_date,
-                                }
-                            )
-                            print("💾 Apartment details saved to database")
-                        except Exception as e:
-                            print(f"⚠️ Error saving apartment to database: {e}")
-
                         # if post_date:
                         #     current_date = datetime.datetime.now()
                         #     if (current_date - post_date).days > 60:
@@ -433,14 +417,35 @@ def main():
                         try:
                             notifier.notify(message, imgs_src, map_image)
                         except Exception as e:
-                            print(f"❌ Error sending message: {e}")
+                            print(f"❌✉️ Error sending message: {e}")
+
+                        # Save apartment only after successful notification
+                        try:
+                            apartments_client.save_apartment(
+                                {
+                                    "item_id": item_id,
+                                    "main_title": main_title,
+                                    "secondary_title": secondary_title,
+                                    "rooms": rooms,
+                                    "floor": floor,
+                                    "area": area,
+                                    "price_text": price_text,
+                                    "description": text,
+                                    "contact_number": posted_by_number,
+                                    "link_to_post": link_to_post,
+                                    "post_date": post_date,
+                                }
+                            )
+                            print("💾 Apartment details saved to database")
+                        except Exception as e:
+                            print(f"❌💾 Error saving apartment to database: {e}")
 
                         print("__________________________")
 
                         browser.close()
                         browser.switch_to.window(browser.window_handles[0])
 
-                        time.sleep(random.randint(3, 6))
+                        time.sleep(10)
 
                     except Exception as e:
                         print(f"❌ Error opening post in new tab: {e}")

@@ -5,13 +5,23 @@ from io import BytesIO
 
 import requests
 from telegram import Bot, InputMediaPhoto
+from telegram.request import HTTPXRequest
 
 from etc import config
 
 
 class Notifier:
     def __init__(self):
-        self.telegram_bot = Bot(token=config.TELEGRAM_BOT_TOKEN)
+        request = HTTPXRequest(
+            connect_timeout=10.0,
+            read_timeout=120.0,
+            write_timeout=120.0,
+            pool_timeout=10.0,
+        )
+        self.telegram_bot = Bot(
+            token=config.TELEGRAM_BOT_TOKEN,
+            request=request
+        )
         self.telegram_chat_id = config.TELEGRAM_CHAT_ID
 
     async def send_telegram_message(self, message, images):
