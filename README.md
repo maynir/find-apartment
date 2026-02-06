@@ -32,7 +32,8 @@ MONGO_CONNECTION = "mongodb://localhost:27017/"
 TELEGRAM_CHAT_ID = ""
 TELEGRAM_BOT_TOKEN = ""
 OPENAI_API_KEY = "your_openai_api_key"
-BUDGET_THRESHOLD = 7000 # set your budget threshold here
+MIN_PRICE = 5000  # set your minimum price here
+BUDGET_THRESHOLD = 10000  # set your maximum budget threshold here
 ```
 
 ### MongoDB Setup
@@ -61,6 +62,7 @@ If you need to manually manage MongoDB:
 4. **Connect to MongoDB**
    ```sh
    mongosh
+   use apartmentsdb
    ```
 
 ## Usage
@@ -68,7 +70,18 @@ To use my project, follow these steps:
 
 ```sh
 python3 src/facebook_main.py
+python3 src/yad2_main.py
 ```
+
+## Testing
+
+To run the tests:
+
+```sh
+pipenv run pytest tests/test_openai_helper.py -v
+```
+
+## Development
 
 Install dependencies
 

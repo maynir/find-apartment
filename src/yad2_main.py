@@ -40,14 +40,18 @@ ROOM_RANGE_BUTTON_CSS = (
 SEARCH_SUBMIT_BUTTON_XPATH = "//button[@data-nagish='search-submit-button']"
 POST_LIST_ITEM_XPATH = "//li[@data-nagish='feed-item-list-box'][not(@data-testid='dfp-slot')][not(@data-testid='yad1-listing-basic')]"
 POST_LINK_XPATH = ".//a[@data-nagish='feed-item-layout-link']"  # Relative XPath
-MAIN_TITLE_CSS = ".ad-item-page-layout_mainContent__tyvpX h1"
-SECONDARY_TITLE_CSS = ".ad-item-page-layout_mainContent__tyvpX h2"
+MAIN_TITLE_XPATH = "//h1[@data-nagish='description-heading-title']"
+MAIN_TITLE_CSS = ".rent-ad-item-page_topSection__KMkZi h1"
+SECONDARY_TITLE_CSS = ".rent-ad-item-page_topSection__KMkZi h2"
+SECONDARY_TITLE_XPATH = "//h2[@data-nagish='address-section-title']"
 PROPERTY_DETAILS_CSS = (
-    ".ad-item-page-layout_mainContent__tyvpX .property-detail_buildingItemBox__ESM9C"
+    ".rent-ad-item-page_topSection__KMkZi .property-detail_buildingItemBox__ESM9C"
 )
+PROPERTY_DETAILS_XPATH = "//div[@data-testid='property-detail-item']"
 DESCRIPTION_CSS = (
-    ".ad-item-page-layout_mainContent__tyvpX .description_description__9t6rz"
+    ".rent-ad-item-page_topSection__KMkZi .description_description__9t6rz"
 )
+DESCRIPTION_XPATH = "//p[@data-testid='property-description']"
 PRICE_TEXT_XPATH = "//span[@data-testid='price']"
 SHOW_CONTACT_BUTTON_XPATH = (
     "//div[@class='rent-agency-contact-section_showAdContactsButtonBox__iB8kS']"
@@ -116,14 +120,14 @@ def search(browser, notifier):
         
         locations = [
             "לב תל אביב, לב העיר צפון, תל אביב יפו",
-            "הצפון הישן - דרום, תל אביב יפו",
-            "הצפון הישן - צפון, תל אביב יפו",
+            # "הצפון הישן - דרום, תל אביב יפו",
+            # "הצפון הישן - צפון, תל אביב יפו",
             "כרם התימנים, תל אביב יפו",
             "נווה צדק, תל אביב יפו",
-            "פלורנטין, תל אביב יפו",
+            # "פלורנטין, תל אביב יפו",
         ]
 
-        for loc in random.sample(locations, 5):
+        for loc in random.sample(locations, min(5, len(locations))):
             location_field.send_keys(loc)
             location_item = wait.until(
                 EC.presence_of_element_located(
@@ -152,8 +156,8 @@ def search(browser, notifier):
         )
         low_price = prices[0]
         high_price = prices[1]
-        low_price.send_keys(5000)
-        high_price.send_keys(7500)
+        low_price.send_keys(config.MIN_PRICE)
+        high_price.send_keys(config.BUDGET_THRESHOLD)
         move_mouse_randomly()
 
         # Find room number
@@ -171,9 +175,13 @@ def search(browser, notifier):
             )
         )
         two_rooms = rooms[2]
-        two_rooms.click()
+        two_half_rooms = rooms[3]
+        two_half_rooms.click()
+        # two_rooms.click()
         three_rooms = rooms[4]
-        three_rooms.click()
+        # three_rooms.click()
+        three_half_rooms = rooms[5]
+        three_half_rooms.click()
         move_mouse_randomly()
 
         search_button = wait.until(
@@ -221,7 +229,7 @@ option.add_argument(
 
 
 def main():
-    notifier = Notifier()
+    notifier = Notifier(config.TELEGRAM_CHAT_ID)
     apartments_client = Yad2DBClient()
     notifier.notify("🚀 Starting Yad2 bot")
     shouldRun = True
@@ -262,6 +270,7 @@ def main():
                     imgs_src = []
                     map_image = None
                     post_date = None
+                    is_agency = False
 
                     try:
                         try:
@@ -292,8 +301,8 @@ def main():
 
                         try:
                             main_title = browser.find_element(
-                                By.CSS_SELECTOR,
-                                MAIN_TITLE_CSS,
+                                By.XPATH,
+                                MAIN_TITLE_XPATH,
                             ).text.strip()
                             print(f"🏠 Main title: {main_title}")
                         except Exception as e:
@@ -305,8 +314,8 @@ def main():
 
                         try:
                             secondary_title = browser.find_element(
-                                By.CSS_SELECTOR,
-                                SECONDARY_TITLE_CSS,
+                                By.XPATH,
+                                SECONDARY_TITLE_XPATH,
                             ).text.strip()
                             print(f"🏢 Secondary title: {secondary_title}")
                         except Exception as e:
@@ -314,8 +323,8 @@ def main():
 
                         try:
                             property_details = browser.find_elements(
-                                By.CSS_SELECTOR,
-                                PROPERTY_DETAILS_CSS,
+                                By.XPATH,
+                                PROPERTY_DETAILS_XPATH,
                             )
                             rooms = property_details[0].text.strip()
                             floor = property_details[1].text.strip()
@@ -326,8 +335,8 @@ def main():
 
                         try:
                             text = browser.find_element(
-                                By.CSS_SELECTOR,
-                                DESCRIPTION_CSS,
+                                By.XPATH,
+                                DESCRIPTION_XPATH,
                             ).text.strip()
                             print(f"📝 Description: {text}")
                         except Exception as e:
@@ -360,8 +369,8 @@ def main():
 
                         try:
                             date_element = browser.find_element(
-                                By.CSS_SELECTOR,
-                                ".report-ad_createdAt__tqSM6"
+                                By.XPATH,
+                                "//span[@class='report-ad_createdAt__tqSM6']"
                             )
                             date_text = date_element.text.strip()
                             date_match = re.search(r'(\d{2}/\d{2}/\d{2})', date_text)
@@ -373,24 +382,17 @@ def main():
                             print(f"⚠️ Error getting post date: {e}")
 
                         try:
-                            apartments_client.save_apartment(
-                                {
-                                    "item_id": item_id,
-                                    "main_title": main_title,
-                                    "secondary_title": secondary_title,
-                                    "rooms": rooms,
-                                    "floor": floor,
-                                    "area": area,
-                                    "price_text": price_text,
-                                    "description": text,
-                                    "contact_number": posted_by_number,
-                                    "link_to_post": link_to_post,
-                                    "post_date": post_date,
-                                }
+                            agency_element = browser.find_elements(
+                                By.XPATH,
+                                "//div[@data-testid='agency-details']"
                             )
-                            print("💾 Apartment details saved to database")
+                            if agency_element:
+                                is_agency = True
+                                print(f"🏢 תיווך: כן (Agency listing)")
+                            else:
+                                print(f"🏢 תיווך: לא (Private listing)")
                         except Exception as e:
-                            print(f"⚠️ Error saving apartment to database: {e}")
+                            print(f"⚠️ Error checking agency status: {e}")
 
                         # if post_date:
                         #     current_date = datetime.datetime.now()
@@ -410,7 +412,8 @@ def main():
                             f"• 🏢 Floor: {floor}\n"
                             f"• 📏 Area: {area}\n"
                             f"• 💰 Price: {price_text}\n"
-                            f"• 📅 Posted: {post_date.strftime('%d/%m/%Y') if post_date else 'N/A'}\n\n"
+                            f"• 📅 Posted: {post_date.strftime('%d/%m/%Y') if post_date else 'N/A'}\n"
+                            f"• 🏢 Agency: {'yes' if is_agency else 'no'}\n\n"
                             f"📝 Description:\n"
                             f"{text}\n\n"
                             f"📞 Contact: {posted_by_number}\n\n"
@@ -433,20 +436,42 @@ def main():
                         try:
                             notifier.notify(message, imgs_src, map_image)
                         except Exception as e:
-                            print(f"❌ Error sending message: {e}")
+                            print(f"❌✉️ Error sending message: {e}")
+
+                        # Save apartment only after successful notification
+                        try:
+                            apartments_client.save_apartment(
+                                {
+                                    "item_id": item_id,
+                                    "main_title": main_title,
+                                    "secondary_title": secondary_title,
+                                    "rooms": rooms,
+                                    "floor": floor,
+                                    "area": area,
+                                    "price_text": price_text,
+                                    "description": text,
+                                    "contact_number": posted_by_number,
+                                    "link_to_post": link_to_post,
+                                    "post_date": post_date,
+                                    "is_agency": is_agency,
+                                }
+                            )
+                            print("💾 Apartment details saved to database")
+                        except Exception as e:
+                            print(f"❌💾 Error saving apartment to database: {e}")
 
                         print("__________________________")
 
                         browser.close()
                         browser.switch_to.window(browser.window_handles[0])
 
-                        time.sleep(random.randint(3, 6))
+                        time.sleep(10)
 
                     except Exception as e:
                         print(f"❌ Error opening post in new tab: {e}")
                         continue
 
-                wait_with_countdown(random.randint(5, 10))
+                wait_with_countdown(15)
                 browser.quit()
                 print("🔄 Restarting search...")
         except Exception as err:

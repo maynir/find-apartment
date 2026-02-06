@@ -1,4 +1,4 @@
-import unittest
+import pytest
 
 from src.utils.openai_helper import (
     analyze_budget_with_openai,
@@ -6,125 +6,94 @@ from src.utils.openai_helper import (
 )
 
 
-class TestOpenAIHelper(unittest.TestCase):
-    """Test cases for the OpenAI helper functions"""
-
-    # Test cases for apartment details analysis
-    APARTMENT_TEST_CASES = [
-        {
-            "description": "Full apartment details in Tel Aviv with specific address",
-            "text": "דירת 3 חדרים להשכרה ברחוב דיזנגוף 99, תל אביב, מחיר: 4500 שח לחודש",
-            "expected": {
-                "price": 4500,
-                "city": "תל אביב",
-                "address": "דיזנגוף 99",
-                "rooms": 3,
-            },
-        },
-        {
-            "description": "Apartment in Florentin with neighborhood only",
-            "text": "דירת 2.5 חדרים להשכרה בפלורנטין, תל אביב, 5000 שקל",
-            "expected": {
-                "price": 5000,
-                "city": "תל אביב",
-                "address": "פלורנטין",
-                "rooms": 2.5,
-            },
-        },
-        {
-            "description": "Apartment with partial address details",
-            "text": "דירה 4 חדרים בשכונת רמת אביב ג, צפון תל אביב, 8000 שקל",
-            "expected": {
-                "price": 8000,
-                "city": "תל אביב",
-                "address": "רמת אביב ג",
-                "rooms": 4,
-            },
-        },
-        {
-            "description": "Street something",
-            "text": "רחוב אייר",
-            "expected": {
-                "price": None,
-                "city": None,
-                "address": "אייר",
-                "rooms": None,
-            },
-        },
-        {
-            "description": "Complex listing near Shuk HaTikva",
-            "text": "להשכרה-ללא תיווך!\n"
-            "דירה עורפית מקסימה, מרוהטת קומפלט.\n"
-            "מתאימה ליחיד-סטודנט/עובד.\n"
-            "בבניין ורחוב שקטים במיוחד.\n"
-            "קומה ראשונה- קומה+1.\n"
-            "חניה בשפע.\n"
-            "שכירות-2,650₪\n"
-            "כולל ארנונה ומים.\n"
-            "כניסה ב1.5\n"
-            "לפרטים-\n"
-            "רועי 0523401525\n"
-            "מרינה 0546699249\n"
-            "מרחק של 5 דק הליכה משוק התקווה ומרכבת ההגנה.\n"
-            "באזור ישנם מספר פארקים,מרכז קהילתי.\n"
-            "איזור נגיש ונוח מאוד.",
-            "expected": {
-                "price": 2650,
-                "city": "תל אביב",
-                "address": "התקווה",
-                "rooms": 1,
-            },
-        },
-        {
-            "description": "Price with dot",
-            "text": "דירת סטודיו מושלמת, ברח' חבקוק 7 100 מטר מחוף מציצים, שכ\"ד 6.350 ₪ (לא כולל חשבונות)",
-            "expected": {
-                "price": 6350,
-                "city": "תל אביב",
-                "address": "חבקוק 7",
-                "rooms": 1,
-            },
-        },
-        {
-            "description": "Price with dot",
-            "text": "חדר שינה וסלון",
-            "expected": {
-                "price": None,
-                "city": None,
-                "address": None,
-                "rooms": 2,
-            },
-        },
-    ]
-
-    def test_analyze_apartment_details_with_openai_real_api(self):
-        """Test the OpenAI-based apartment details analysis function with real API calls"""
-
-        for test_case in self.APARTMENT_TEST_CASES:
-            with self.subTest(description=test_case["description"]):
-                price, city, address, rooms, location_details = (
-                    analyze_apartment_details_with_openai(test_case["text"])
-                )
-
-                expected = test_case["expected"]
-                self.assertEqual(price, expected["price"])
-                self.assertEqual(city, expected["city"])
-                self.assertEqual(address, expected["address"])
-                self.assertEqual(rooms, expected["rooms"])
-                # self.assertEqual(location_details, expected["location_details"])
-
-    def test_analyze_budget_with_openai_real_api(self):
-        """Test the OpenAI-based budget analysis function with a real API call"""
-
-        apartment_text = "דירה להשכרה במרכז תל אביב, מחיר: 6500 שח לחודש"
-
-        is_within_budget, price, explanation = analyze_budget_with_openai(
-            apartment_text
-        )
-
-        self.assertEqual(price, 6500)
-        self.assertEqual(is_within_budget, True)
+# Test cases for apartment details analysis
+APARTMENT_TEST_CASES = [
+    pytest.param(
+        "דירת 3 חדרים להשכרה ברחוב דיזנגוף 99, תל אביב, מחיר: 4500 שח לחודש",
+        {"price": 4500, "city": "תל אביב", "address": "דיזנגוף 99", "rooms": 3, "is_in_kerem_hateimanim": False},
+        id="full_apartment_details_tel_aviv",
+    ),
+    pytest.param(
+        "דירת 2.5 חדרים להשכרה בפלורנטין, תל אביב, 5000 שקל",
+        {"price": 5000, "city": "תל אביב", "address": "פלורנטין", "rooms": 2.5, "is_in_kerem_hateimanim": False},
+        id="florentin_neighborhood_only",
+    ),
+    pytest.param(
+        "דירה 4 חדרים בשכונת רמת אביב ג, צפון תל אביב, 8000 שקל",
+        {"price": 8000, "city": "תל אביב", "address": "רמת אביב ג", "rooms": 4, "is_in_kerem_hateimanim": False},
+        id="partial_address_ramat_aviv",
+    ),
+    pytest.param(
+        "רחוב אייר",
+        {"price": None, "city": None, "address": "אייר", "rooms": None, "is_in_kerem_hateimanim": False},
+        id="street_only",
+    ),
+    pytest.param(
+        "להשכרה-ללא תיווך!\n"
+        "דירה עורפית מקסימה, מרוהטת קומפלט.\n"
+        "מתאימה ליחיד-סטודנט/עובד.\n"
+        "בבניין ורחוב שקטים במיוחד.\n"
+        "קומה ראשונה- קומה+1.\n"
+        "חניה בשפע.\n"
+        "שכירות-2,650₪\n"
+        "כולל ארנונה ומים.\n"
+        "כניסה ב1.5\n"
+        "לפרטים-\n"
+        "רועי 0523401525\n"
+        "מרינה 0546699249\n"
+        "מרחק של 5 דק הליכה משוק התקווה ומרכבת ההגנה.\n"
+        "באזור ישנם מספר פארקים,מרכז קהילתי.\n"
+        "איזור נגיש ונוח מאוד.",
+        {"price": 2650, "city": "תל אביב", "address": "התקווה", "rooms": 1, "is_in_kerem_hateimanim": False},
+        id="complex_listing_shuk_hatikva",
+    ),
+    pytest.param(
+        "דירת סטודיו מושלמת, ברח' חבקוק 7 100 מטר מחוף מציצים, שכ\"ד 6.350 ₪ (לא כולל חשבונות)",
+        {"price": 6350, "city": "תל אביב", "address": "חבקוק 7", "rooms": 1, "is_in_kerem_hateimanim": False},
+        id="price_with_dot",
+    ),
+    pytest.param(
+        "חדר שינה וסלון",
+        {"price": None, "city": None, "address": None, "rooms": 2, "is_in_kerem_hateimanim": False},
+        id="bedroom_and_living_room",
+    ),
+    pytest.param(
+        "דירת 2 חדרים להשכרה ברחוב בוגרשוב 50, תל אביב, 5500 שקל",
+        {"price": 5500, "city": "תל אביב", "address": "בוגרשוב 50", "rooms": 2, "is_in_kerem_hateimanim": False},
+        id="bograshov_NOT_in_kerem_hateimanim",
+    ),
+    pytest.param(
+        "דירת 3 חדרים להשכרה ברחוב גאולה 15, כרם התימנים, תל אביב, 6000 שקל",
+        {"price": 6000, "city": "תל אביב", "address": "גאולה 15", "rooms": 3, "is_in_kerem_hateimanim": True},
+        id="geula_IS_in_kerem_hateimanim",
+    ),
+    pytest.param(
+        "דירת 3 חדרים להשכרה ברחוב הרב קוק 15, תל אביב, 6000 שקל",
+        {"price": 6000, "city": "תל אביב", "address": "הרב קוק 15", "rooms": 3, "is_in_kerem_hateimanim": True},
+        id="harav_kook_IS_in_kerem_hateimanim",
+    ),
+]
 
 
-if __name__ == "__main__":
-    unittest.main()
+@pytest.mark.parametrize("text,expected", APARTMENT_TEST_CASES)
+def test_analyze_apartment_details(text, expected):
+    """Test the OpenAI-based apartment details analysis function"""
+    price, city, address, rooms, location_details, close_to_sea, is_in_kerem_hateimanim = (
+        analyze_apartment_details_with_openai(text)
+    )
+
+    assert price == expected["price"]
+    assert city == expected["city"]
+    assert address == expected["address"]
+    assert rooms == expected["rooms"]
+    assert is_in_kerem_hateimanim == expected["is_in_kerem_hateimanim"]
+
+
+def test_analyze_budget():
+    """Test the OpenAI-based budget analysis function"""
+    apartment_text = "דירה להשכרה במרכז תל אביב, מחיר: 6500 שח לחודש"
+
+    is_within_budget, price, explanation = analyze_budget_with_openai(apartment_text)
+
+    assert price == 6500
+    assert is_within_budget == True
