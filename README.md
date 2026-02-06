@@ -73,6 +73,16 @@ python3 src/facebook_main.py
 python3 src/yad2_main.py
 ```
 
+## Testing
+
+To run the tests:
+
+```sh
+pipenv run pytest tests/test_openai_helper.py -v
+```
+
+## Development
+
 Install dependencies
 
 ```sh

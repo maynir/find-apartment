@@ -118,7 +118,8 @@ option.add_argument(
 
 
 def main():
-    notifier = Notifier()
+    notifier = Notifier(config.TELEGRAM_CHAT_ID)
+    kerem_notifier = Notifier(config.KEREM_ONLY_TELEGRAM_CHAT_ID)
     apartments_client = ApartmentsDBClient()
     notifier.notify("🚀 Starting Facebook bot")
     shouldRun = True
@@ -152,7 +153,7 @@ def main():
                             EC.presence_of_element_located(
                                 (
                                     By.XPATH,
-                                    "//*[@class='x1i10hfl xjbqb8w x1ejq31n xd10rxx x1sy0etr x17r0tee x972fbf xcfux6l x1qhh985 xm0m39n x9f619 x1ypdohk xt0psk2 xe8uvvx xdj266r x11i5rnm xat24cr x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x16tdsg8 x1hl2dhg xggy1nq x1a2a7pz x1heor9g xkrqix3 x1sur9pj x1pd3egz']",
+                                    "//*[@class='x1i10hfl xjbqb8w x1ejq31n x18oe1m7 x1sy0etr xstzfhl x972fbf x10w94by x1qhh985 x14e42zd x9f619 x1ypdohk xt0psk2 x3ct3a4 xdj266r x14z9mp xat24cr x1lziwak xexx8yu xyri2b x18d9i69 x1c1uobl x16tdsg8 x1hl2dhg xggy1nq x1a2a7pz x1heor9g xkrqix3 x1sur9pj x1pd3egz']",
                                 )
                             )
                         )
@@ -175,6 +176,17 @@ def main():
                         posts = browser.find_elements(
                             By.XPATH, f"//*[@class='{posts_class}']"
                         )
+                        # If still no posts found, try fallback class selector
+                        if len(posts) in (0, 1):
+                            print(f"🔄 Trying fallback class selector...")
+                            posts_class = "x1n2onr6 xh8yej3 x1ja2u2z xod5an3"
+                            posts = browser.find_elements(
+                                By.XPATH, f"//*[@class='{posts_class}']"
+                            )
+                            if len(posts) > 1:
+                                print(f"✅ Found {len(posts)} posts with fallback selector")
+                                blocked_retries = 0
+                                cool_down_minutes = 30
                     else:
                         blocked_retries = 0
                         cool_down_minutes = 30
@@ -194,8 +206,7 @@ def main():
                         story_message_elements = post.find_elements(
                             By.XPATH, ".//div[@data-ad-rendering-role='story_message']"
                         )
-                        if story_message_elements:
-                            inner_post = story_message_elements[0]
+                        if len(story_message_elements) > 1:
                             print(f"🪏 Found post inside post")
                         posted_by = None
                         posted_by_url = None
@@ -210,13 +221,13 @@ def main():
                             try:
                                 time.sleep(random.randint(4, 7))
                                 posted_by = post.find_element(
-                                    By.TAG_NAME, "strong"
+                                    By.XPATH, ".//span[@class='html-span xdj266r x14z9mp xat24cr x1lziwak xexx8yu xyri2b x18d9i69 x1c1uobl x1hl2dhg x16tdsg8 x1vvkbs']"
                                 ).text
                                 if not posted_by:
                                     print("id is empty, trying again")
                                     time.sleep(2)
                                     posted_by = post.find_element(
-                                        By.TAG_NAME, "strong"
+                                        By.XPATH, ".//span[@class='html-span xdj266r x14z9mp xat24cr x1lziwak xexx8yu xyri2b x18d9i69 x1c1uobl x1hl2dhg x16tdsg8 x1vvkbs']"
                                     ).text
                                 print(f"🔍 Processing post By '{posted_by}'")
                             except Exception as err:
@@ -262,16 +273,33 @@ def main():
                             except Exception as err:
                                 print(f"⚠️Could not find post author URL")
 
-                            # Get post text
+                            # Get post text - try both possible selectors
                             try:
-                                if inner_post:
-                                    text = inner_post.find_element(
-                                        By.XPATH, f".//*[@data-ad-preview='message']"
+                                container = inner_post if inner_post else post
+                                text = ""
+                                
+                                # Try data-ad-preview='message' first
+                                try:
+                                    text = container.find_element(
+                                        By.XPATH, ".//*[@data-ad-preview='message']"
                                     ).text.strip()
-                                else:
-                                    text = post.find_element(
-                                        By.XPATH, f".//*[@data-ad-preview='message']"
-                                    ).text.strip()
+                                except Exception:
+                                    print(f"⚠️Could not find post text in data-ad-preview='message'")
+                                    pass
+                                
+                                # If no text found, try data-ad-rendering-role='story_message'
+                                if not text:
+                                    try:
+                                        text = container.find_elements(
+                                            By.XPATH, ".//*[@data-ad-rendering-role='story_message']"
+                                        )[0].text.strip()
+                                    except Exception:
+                                        print(f"⚠️Could not find post text in data-ad-rendering-role='story_message'")
+                                        pass
+                                
+                                if not text:
+                                    raise Exception("No text found in either selector")
+                                    
                                 print(f"📝 Found post text:")
                                 print(text)
                             except Exception as err:
@@ -325,6 +353,7 @@ def main():
                                 rooms,
                                 location_details,
                                 close_to_sea,
+                                is_in_kerem_hateimanim,
                             ) = analyze_apartment_details_with_openai(
                                 f"{text}\nPrice: {price_text}"
                             )
@@ -335,6 +364,7 @@ def main():
                             print(f" 📍 Address: {address}, City: {city}")
                             print(f" 🚪 Rooms: {rooms}")
                             print(f" 🌊 Close to sea: {close_to_sea}")
+                            print(f" 🏘️ In Kerem HaTeimanim: {is_in_kerem_hateimanim}")
                             print(f" 🗺️ Location Details: {location_details}")
 
                             (
@@ -362,6 +392,7 @@ def main():
                                     "rooms": rooms,
                                     "location_details": location_details,
                                     "close_to_sea": close_to_sea,
+                                    "is_in_kerem_hateimanim": is_in_kerem_hateimanim,
                                     "is_within_budget": price
                                     and price <= config.BUDGET_THRESHOLD,
                                 }
@@ -376,6 +407,11 @@ def main():
 
                             if price and price > config.BUDGET_THRESHOLD:
                                 print(f"👎🏼 Apartment exceeds budget threshold")
+                                print("__________________________")
+                                continue
+
+                            if is_in_kerem_hateimanim is not None and not is_in_kerem_hateimanim:
+                                print(f"👎🏼 Apartment is not in Kerem HaTeimanim")
                                 print("__________________________")
                                 continue
 
@@ -398,6 +434,10 @@ def main():
                                 if close_to_sea:
                                     apartment_details.append(
                                         f"🌊 Close to sea: {close_to_sea}"
+                                    )
+                                if is_in_kerem_hateimanim is not None:
+                                    apartment_details.append(
+                                        f"🏘️ In Kerem HaTeimanim: {is_in_kerem_hateimanim}"
                                     )
 
                                 details_section = (
@@ -425,6 +465,9 @@ def main():
                                     map_image = generate_map_image(address, city)
 
                                 notifier.notify(message, imgs_src, map_image)
+                                
+                                if is_in_kerem_hateimanim:
+                                    kerem_notifier.notify(message, imgs_src, map_image)
                             except Exception as err:
                                 print(
                                     f"⚠️ Could not send Telegram message: {err}, {message}"

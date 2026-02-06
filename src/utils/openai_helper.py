@@ -69,7 +69,7 @@ def analyze_budget_with_openai(text):
 def analyze_apartment_details_with_openai(text):
     """
     Use OpenAI to analyze apartment post details.
-    Returns a tuple of (price, city, address, rooms, location_details, close_to_sea)
+    Returns a tuple of (price, city, address, rooms, location_details, close_to_sea, is_in_kerem_hateimanim)
     """
     try:
         prompt = f"""
@@ -80,6 +80,7 @@ def analyze_apartment_details_with_openai(text):
         4. What is the EXACT number of rooms?
         5. Give a brief, one-line summary of key location details (nearby landmarks, transportation, or features).
         6. Is the location close to the beach?
+        7. Based on the address/location you found in question 3, is it located within or near the "כרם התימנים" (Kerem HaTeimanim) neighborhood in Tel Aviv? Think carefully about the exact street and whether it falls within the Kerem HaTeimanim boundaries.
 
         Post text:
         {text}
@@ -91,7 +92,8 @@ def analyze_apartment_details_with_openai(text):
             "address": string or null,
             "rooms": number or null,
             "location_details": string or null,
-            "close_to_sea": boolean or null
+            "close_to_sea": boolean or null,
+            "is_in_kerem_hateimanim": boolean or null
         }}
         """
 
@@ -100,7 +102,7 @@ def analyze_apartment_details_with_openai(text):
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a helpful assistant answering in hebrew that analyzes apartment posts in Hebrew to extract key information. You have deep knowledge of Israeli cities and landmarks. Provide brief, concise summaries and be accurate.",
+                    "content": "You are a helpful assistant answering in hebrew that analyzes apartment posts in Hebrew to extract key information. You have deep knowledge of Israeli cities, neighborhoods and landmarks, especially Tel Aviv neighborhoods like כרם התימנים. Provide brief, concise summaries and be accurate.",
                 },
                 {"role": "user", "content": prompt},
             ],
@@ -118,9 +120,10 @@ def analyze_apartment_details_with_openai(text):
         rooms = parsed_result.get("rooms")
         location_details = parsed_result.get("location_details")
         close_to_sea = parsed_result.get("close_to_sea")
+        is_in_kerem_hateimanim = parsed_result.get("is_in_kerem_hateimanim")
 
-        return (price, city, address, rooms, location_details, close_to_sea)
+        return (price, city, address, rooms, location_details, close_to_sea, is_in_kerem_hateimanim)
 
     except Exception as e:
         print(f"⚠️ Error analyzing apartment details with OpenAI: {e}")
-        return (None, None, None, None, None, None)
+        return (None, None, None, None, None, None, None)

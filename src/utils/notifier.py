@@ -11,7 +11,7 @@ from etc import config
 
 
 class Notifier:
-    def __init__(self):
+    def __init__(self, telegram_chat_id):
         request = HTTPXRequest(
             connect_timeout=10.0,
             read_timeout=120.0,
@@ -22,7 +22,7 @@ class Notifier:
             token=config.TELEGRAM_BOT_TOKEN,
             request=request
         )
-        self.telegram_chat_id = config.TELEGRAM_CHAT_ID
+        self.telegram_chat_id = telegram_chat_id
 
     async def send_telegram_message(self, message, images):
         async with self.telegram_bot:

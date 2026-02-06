@@ -36,6 +36,27 @@ single_apartment_words = [
     "שלושה חדרים",
     "3 חדרים",
 ]
+couple_apartment_words = [
+    "זוג",
+    "לזוג",
+    "לזוגות",
+    "זוגות",
+    "2.5 חדרים",
+    "2.5 חד",
+    "2.5 חד'",
+    "שניים וחצי חדרים",
+    "שתיים וחצי חדרים",
+    "3 חדרים",
+    "3 חד",
+    "3 חד,",
+    "חדר שינה + חדר עבודה",
+    "שני חדרים",
+    "3 חדרים",
+    "שניי חדרים",
+    "שני חדריי",
+    "שלושה חדרים",
+    "שלושה וחצי חדרים",
+]
 sharable_apartment_words = [
     "השותף",
     "השותפה",
@@ -63,8 +84,6 @@ sharable_apartment_words = [
     "שותפים",
     "שותפות",
     "מפנה את החדר",
-    "שלושה חדרים",
-    "3 חדרים",
 ]
 sublet_words = [
     "סאבלט",
@@ -73,7 +92,7 @@ sublet_words = [
     "מסבלט",
     "מסבלטים",
 ]
-words = single_apartment_words
+words = sharable_apartment_words
 good_words_regex = re.compile(r"\b(" + "|".join(re.escape(x) for x in words) + r")\b")
 
 single_apartment_bad_words = [
@@ -136,6 +155,12 @@ single_apartment_bad_words = [
     "במעונות ברושים",
     "נווה אביבית",
     "בנווה אביבית",
+    "קריית שלום",
+    "בקריית שלום",
+    "נווה עופר",
+    "בנווה עופר",
+    "פלורנטין",
+    "בפלורנטין",
 ]
 sharable_apartment_bad_words = [
     "סורי בנות",
@@ -176,11 +201,11 @@ def validate_match(text, price=None, city=None, rooms=None):
 
     # Good match conditions based on OpenAI data
     if rooms is not None:
-        if 1 <= rooms <= 3:  # Consider studios and up to 2.5 rooms as good matches
-            good_match_word = "גודל דירה טוב"
+        if 2.5 <= rooms <= 3.5:  # Consider studios and up to 2.5 rooms as good matches
+            good_match_word = f"גודל דירה טוב ({rooms} חדרים)"
             is_good_match_word = True
         else:  # 3 or more rooms usually indicates shared apartments
-            bad_match_word = "גודל דירה לא טוב"
+            bad_match_word = f"גודל דירה לא טוב ({rooms} חדרים)"
             is_bad_match_word = True
 
     return is_good_match_word, is_bad_match_word, good_match_word, bad_match_word
