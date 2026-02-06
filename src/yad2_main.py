@@ -5,6 +5,7 @@ import sys
 import time
 import datetime
 import pymongo
+from urllib.parse import quote_plus
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -282,7 +283,7 @@ def main():
                             continue
 
                         try:
-                            item_id = link_to_post.split("/item/")[1].split("?")[0]
+                            item_id = link_to_post.split("/")[-1].split("?")[0]
                             print(f"📋 Item ID: {item_id}")
                         except Exception as e:
                             print(f"❌ Error extracting item ID: {e}")
@@ -403,6 +404,9 @@ def main():
                         #         time.sleep(random.randint(6, 7))
                         #         continue
                         
+                        maps_query = quote_plus(f"{main_title} תל אביב")
+                        google_maps_url = f"https://www.google.com/maps/search/?api=1&query={maps_query}"
+                        
                         message = (
                             f"Yad2\n"
                             f"🏠 Main title: {main_title}\n"
@@ -413,11 +417,12 @@ def main():
                             f"• 📏 Area: {area}\n"
                             f"• 💰 Price: {price_text}\n"
                             f"• 📅 Posted: {post_date.strftime('%d/%m/%Y') if post_date else 'N/A'}\n"
-                            f"• 🏢 Agency: {'yes' if is_agency else 'no'}\n\n"
+                            f"• 🏢 Agency: {'Yes' if is_agency else 'No'}\n\n"
                             f"📝 Description:\n"
                             f"{text}\n\n"
                             f"📞 Contact: {posted_by_number}\n\n"
-                            f"🔗 [View on Yad2]({link_to_post})"
+                            f"🔗 [View on Yad2]({link_to_post})\n"
+                            f"🗺️ [Google Maps]({google_maps_url})"
                         )
 
                         try:
