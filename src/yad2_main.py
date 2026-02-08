@@ -13,7 +13,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from twilio.rest import Client
-from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.service import Service as ChromeService
 from database import Yad2DBClient
 from etc import config
 from utils import human_delay, random_num
@@ -239,7 +239,7 @@ def main():
         try:
             while True:
                 browser = webdriver.Chrome(
-                    service=webdriver.ChromeService(ChromeDriverManager().install()),
+                    service=ChromeService(),
                     options=option,
                 )
                 browser.get("http://www.yad2.co.il/realestate/rent")
@@ -484,10 +484,16 @@ def main():
             print("Full traceback:")
             traceback.print_exc()
             print("Continuing after error...")
-            browser.quit()
+            try:
+                browser.quit()
+            except NameError:
+                pass
             time.sleep(10)
 
-    browser.quit()
+    try:
+        browser.quit()
+    except NameError:
+        pass
 
 
 if __name__ == "__main__":
